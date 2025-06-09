@@ -7,12 +7,12 @@ import 'chartjs-adapter-date-fns';
 const CardPage = ({ card }) => {
   const [promotion, setPromotion] = useState('')
   const [data, setData] = useState([]);
+  
                                                   /* CARD DATA WEB SCRAPING */
   useEffect(() => {
     if (!card){
-      return 'Error'
+      return 
     }
-
     const fetchPromotion = async () => {
       try {
         const response = await axios.get(
@@ -38,7 +38,7 @@ const CardPage = ({ card }) => {
     fetchPromotion()
   }, [card])
 
-  
+
                                                   /* CARD DATA AI PARSING */
 
                                                   
@@ -53,7 +53,7 @@ useEffect(()=>{
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents:
-        `${promotion} please fill out membership fee to its exact amount - you always forget the decimal point IT IS NOT 15588, DOUBLE CHECK. please fill out when the data was gathered (it's in the last sentence), do not respond if not all of the array has been finished`, 
+        `${promotion} please fill out membership fee to its exact amount - you always forget the decimal point IT IS NOT 15588, DOUBLE CHECK. please fill out when the data was gathered (it's in the last sentence), do not respond until all of the structured response has been filled out`, 
       config: {
         responseMimeType: "application/json",
         responseSchema: {
