@@ -2,10 +2,26 @@ import axios from 'axios'
 import { useState, useEffect } from 'react'
 import { Chart } from 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
+import styles from './CardPage.module.css';
 
 const CardPage = ({ card }) => {
   const [historicalData, setHistoricalData] = useState([]);
   const [latestPromotion, setLatestPromotion] = useState('');
+  const [viewMode, setViewMode] = useState('chart'); // 'chart' or 'data'
+
+  // Field name formatting
+  const fieldLabels = {
+    totalPoints: 'Total Points',
+    totalSpendRequired: 'Total Spend Required',
+    monthlySpendRequired: 'Monthly Spend Required',
+    monthlyPoints: 'Monthly Points',
+    promotionDurationMonths: 'Promotion Duration (Months)',
+    totalMembershipFee: 'Total Membership Fee',
+    monthlyFee: 'Monthly Fee',
+    dataGatheredAt: 'Data Gathered At',
+    promotionText: 'Promotion Text',
+    recordDate: 'Record Date'
+  };
 
   // Fetch historical data from MongoDB
   useEffect(() => {
@@ -47,9 +63,9 @@ const CardPage = ({ card }) => {
     fetchData();
   }, [card]);
 
-  // Render chart when data is available
+  // Render chart when data is available or view changes
   useEffect(() => {
-    if (!historicalData || historicalData.length === 0) return;
+    if (!historicalData || historicalData.length === 0 || viewMode !== 'chart') return;
 
     const canvas = document.getElementById('cardChart');
     if (!canvas) return;
@@ -73,6 +89,8 @@ const CardPage = ({ card }) => {
             y: item.totalPoints
           })),
           borderColor: 'rgb(75, 192, 192)',
+          pointRadius: 6,
+          pointHoverRadius: 8,
           tension: 0.1
         }]
       },
@@ -99,26 +117,69 @@ const CardPage = ({ card }) => {
       }
     });
 
-  }, [historicalData]);
+  }, [historicalData, viewMode]);
 
   return (
     <>
       <h2>Amex Cobalt - Points History</h2>
       <p>{latestPromotion}</p>
-      <canvas id='cardChart'></canvas>
 
-      {historicalData.length > 0 && (
-        <div style={{ marginTop: '20px' }}>
-          <h3>Latest Data:</h3>
-          <ul>
-            {historicalData.slice(-1).map((item, idx) => (
-              <li key={idx}>
-                <strong>Points:</strong> {item.totalPoints} |
-                <strong> Spend Required:</strong> ${item.totalSpendRequired} |
-                <strong> Membership Fee:</strong> ${item.totalMembershipFee}
-              </li>
-            ))}
-          </ul>
+      {/* View Toggle Buttons */}
+      <div className={styles.toggleContainer}>
+        <button
+          onClick={() => setViewMode('chart')}
+          className={viewMode === 'chart' ? styles.toggleButtonActive : styles.toggleButton}
+        >
+          Chart View
+        </button>
+        <button
+          onClick={() => setViewMode('data')}
+          className={viewMode === 'data' ? styles.toggleButtonActive : styles.toggleButton}
+        >
+          All Data View
+        </button>
+      </div>
+
+      {/* Chart View */}
+      {viewMode === 'chart' && <canvas id='cardChart'></canvas>}
+
+      {/* All Historical Data View */}
+      {viewMode === 'data' && historicalData.length > 0 && (
+        <div className={styles.historicalData}>
+          <h3>All Historical Data</h3>
+          {historicalData.map((item, idx) => (
+            <div key={idx} className={styles.recordCard}>
+              <h4>
+                Record #{historicalData.length - idx} - {new Date(item.dataGatheredAt).toLocaleString()}
+              </h4>
+
+              <div className={styles.fieldGrid}>
+                {Object.entries(item)
+                  .filter(([key]) => key !== 'promotionText' && key !== '_id' && key !== 'recordDate')
+                  .map(([key, value]) => (
+                    <div key={key} className={styles.fieldItem}>
+                      <strong>{fieldLabels[key] || key}:</strong>{' '}
+                      {key === 'dataGatheredAt'
+                        ? new Date(value).toLocaleString()
+                        : key.includes('Fee') || key.includes('Spend') || key.includes('Points')
+                          ? (key.includes('Fee') || key.includes('Spend') ? `$${value}` : value)
+                          : value
+                      }
+                    </div>
+                  ))
+                }
+              </div>
+
+              {item.promotionText && (
+                <div className={styles.promotionText}>
+                  <strong>{fieldLabels.promotionText}:</strong>
+                  <pre className={styles.promotionPre}>
+                    {item.promotionText}
+                  </pre>
+                </div>
+              )}
+            </div>
+          )).reverse()}
         </div>
       )}
     </>

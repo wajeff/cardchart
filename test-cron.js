@@ -1,9 +1,11 @@
-// Vercel Serverless Function - Runs daily at 12AM
-// Fetches BrowseAI data → Parses with Gemini → Saves to MongoDB
-
+// Test script to run cron logic locally without Vercel
 import axios from 'axios';
 import { GoogleGenAI } from '@google/genai';
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
+// Load environment variables from root .env
+dotenv.config();
 
 // MongoDB Schema
 const DataSchema = new mongoose.Schema({
@@ -26,12 +28,7 @@ async function connectDB() {
   isConnected = true;
 }
 
-export default async function handler(req, res) {
-  // Verify this is a cron request (optional security)
-  if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
+async function runCron() {
   try {
     await connectDB();
 
@@ -39,7 +36,10 @@ export default async function handler(req, res) {
     const ROBOT_API_KEY = process.env.VITE_ROBOT_API_KEY;
     const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY;
 
+    console.log('🚀 Starting cron job test...\n');
+
     // 1. Fetch data from Browse.ai
+    console.log('📡 Fetching from Browse.ai...');
     const browseResponse = await axios.get(
       `https://api.browse.ai/v2/robots/${ROBOT_ID}/tasks`,
       {
@@ -52,15 +52,18 @@ export default async function handler(req, res) {
     const promotionData = browseResponse.data?.result?.robotTasks?.items?.[2];
 
     // Log raw promotion text to see format
-    console.log('Raw promotion from BrowseAI:', promotionData?.capturedTexts?.Promotion);
-    console.log('Finished at:', promotionData?.finishedAt);
+    console.log('\n📋 Raw promotion from BrowseAI:');
+    console.log(promotionData?.capturedTexts?.Promotion);
+    console.log('\n⏰ Finished at:', promotionData?.finishedAt);
 
     const promotionText = promotionData?.capturedTexts?.Promotion || 'No promotion found';
     const promotion = `${promotionText} Data was gathered at ${promotionData.finishedAt}`;
 
-    console.log('Fetched Browse.ai data:', promotion);
+    console.log('\n📝 Combined promotion data:');
+    console.log(promotion);
 
     // 2. Parse with Gemini
+    console.log('\n🤖 Parsing with Gemini...');
     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
     const geminiResponse = await ai.models.generateContent({
@@ -110,9 +113,11 @@ Extract accurate values from the text. If a field is not mentioned, use 0.`,
       item.dataGatheredAt = Date.now(); // Use server time instead of Gemini-parsed timestamp
     });
 
-    console.log('Parsed Gemini data:', parsedData);
+    console.log('\n✅ Parsed Gemini data:');
+    console.log(JSON.stringify(parsedData, null, 2));
 
     // 3. Check for duplicates (ignore promotionText and dataGatheredAt)
+    console.log('\n🔍 Checking for duplicates...');
     const existingData = await DataModel.find({});
 
     const isDuplicate = existingData.some(record => {
@@ -133,8 +138,7 @@ Extract accurate values from the text. If a field is not mentioned, use 0.`,
 
     // 4. Save to MongoDB if new
     if (isDuplicate) {
-      console.log('Data already exists - skipping save');
-      return res.status(200).json({ message: 'Data already exists - skipped', data: parsedData });
+      console.log('\n⚠️  Data already exists - skipping save');
     } else {
       const newRecord = new DataModel({
         card: 'amex_cobalt',
@@ -143,13 +147,16 @@ Extract accurate values from the text. If a field is not mentioned, use 0.`,
       });
 
       await newRecord.save();
-      console.log('New data saved to MongoDB!');
-
-      return res.status(200).json({ message: 'New data saved!', data: parsedData });
+      console.log('\n💾 New data saved to MongoDB!');
     }
 
+    console.log('\n✨ Cron job test completed successfully!\n');
+    process.exit(0);
+
   } catch (error) {
-    console.error('Cron job error:', error);
-    return res.status(500).json({ error: error.message });
+    console.error('\n❌ Cron job error:', error);
+    process.exit(1);
   }
 }
+
+runCron();
