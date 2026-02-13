@@ -27,6 +27,7 @@ mongoose.connect(process.env.MONGO_URI, {
 // Sample schema
 
 const DataSchema = new mongoose.Schema({
+  card: String,
   date: String,
   data: Array
 });
@@ -36,7 +37,12 @@ const DataModel = mongoose.model('Data', DataSchema);
 // API route
 
 app.get('/api/data', async (req, res) => {
-  const results = await DataModel.find();
+  const { card } = req.query;
+
+  // Filter by card if provided, otherwise return all
+  const query = card ? { card } : {};
+  const results = await DataModel.find(query).sort({ date: 1 });
+
   res.json(results);
 });
 

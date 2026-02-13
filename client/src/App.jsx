@@ -10,7 +10,7 @@ function App() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/data')
+    fetch('http://localhost:3001/api/data')
       .then(res => res.json())
       .then(setData);
   }, []);
