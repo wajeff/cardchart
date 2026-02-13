@@ -1,27 +1,13 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react'
-import { Chart } from 'chart.js/auto';
-import 'chartjs-adapter-date-fns';
-import styles from './CardPage.module.css';
+import styles from './CardPage.module.css'
+import ChartView from '../ChartView/ChartView'
+import HistoricalDataView from '../HistoricalDataView/HistoricalDataView'
 
 const CardPage = ({ card }) => {
-  const [historicalData, setHistoricalData] = useState([]);
-  const [latestPromotion, setLatestPromotion] = useState('');
-  const [viewMode, setViewMode] = useState('chart'); // 'chart' or 'data'
-
-  // Field name formatting
-  const fieldLabels = {
-    totalPoints: 'Total Points',
-    totalSpendRequired: 'Total Spend Required',
-    monthlySpendRequired: 'Monthly Spend Required',
-    monthlyPoints: 'Monthly Points',
-    promotionDurationMonths: 'Promotion Duration (Months)',
-    totalMembershipFee: 'Total Membership Fee',
-    monthlyFee: 'Monthly Fee',
-    dataGatheredAt: 'Data Gathered At',
-    promotionText: 'Promotion Text',
-    recordDate: 'Record Date'
-  };
+  const [historicalData, setHistoricalData] = useState([])
+  const [latestPromotion, setLatestPromotion] = useState('')
+  const [viewMode, setViewMode] = useState('chart')
 
   // Fetch historical data from MongoDB
   useEffect(() => {
@@ -52,7 +38,7 @@ const CardPage = ({ card }) => {
           }))
         );
 
-        setHistoricalData(allDataPoints);
+        setHistoricalData(allDataPoints)
 
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -62,62 +48,6 @@ const CardPage = ({ card }) => {
 
     fetchData();
   }, [card]);
-
-  // Render chart when data is available or view changes
-  useEffect(() => {
-    if (!historicalData || historicalData.length === 0 || viewMode !== 'chart') return;
-
-    const canvas = document.getElementById('cardChart');
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Destroy existing chart if it exists
-    const existingChart = Chart.getChart(canvas);
-    if (existingChart) {
-      existingChart.destroy();
-    }
-
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        datasets: [{
-          label: 'Total Points',
-          data: historicalData.map(item => ({
-            x: new Date(item.dataGatheredAt),
-            y: item.totalPoints
-          })),
-          borderColor: 'rgb(75, 192, 192)',
-          pointRadius: 6,
-          pointHoverRadius: 8,
-          tension: 0.1
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          x: {
-            type: 'time',
-            title: {
-              display: true,
-              text: 'Date'
-            },
-            time: {
-              unit: 'day'
-            }
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Total Points'
-            }
-          }
-        }
-      }
-    });
-
-  }, [historicalData, viewMode]);
 
   return (
     <>
@@ -140,48 +70,8 @@ const CardPage = ({ card }) => {
         </button>
       </div>
 
-      {/* Chart View */}
-      {viewMode === 'chart' && <canvas id='cardChart'></canvas>}
-
-      {/* All Historical Data View */}
-      {viewMode === 'data' && historicalData.length > 0 && (
-        <div className={styles.historicalData}>
-          <h3>All Historical Data</h3>
-          {historicalData.map((item, idx) => (
-            <div key={idx} className={styles.recordCard}>
-              <h4>
-                Record #{historicalData.length - idx} - {new Date(item.dataGatheredAt).toLocaleString()}
-              </h4>
-
-              <div className={styles.fieldGrid}>
-                {Object.entries(item)
-                  .filter(([key]) => key !== 'promotionText' && key !== '_id' && key !== 'recordDate')
-                  .map(([key, value]) => (
-                    <div key={key} className={styles.fieldItem}>
-                      <strong>{fieldLabels[key] || key}:</strong>{' '}
-                      {key === 'dataGatheredAt'
-                        ? new Date(value).toLocaleString()
-                        : key.includes('Fee') || key.includes('Spend') || key.includes('Points')
-                          ? (key.includes('Fee') || key.includes('Spend') ? `$${value}` : value)
-                          : value
-                      }
-                    </div>
-                  ))
-                }
-              </div>
-
-              {item.promotionText && (
-                <div className={styles.promotionText}>
-                  <strong>{fieldLabels.promotionText}:</strong>
-                  <pre className={styles.promotionPre}>
-                    {item.promotionText}
-                  </pre>
-                </div>
-              )}
-            </div>
-          )).reverse()}
-        </div>
-      )}
+      {viewMode === 'chart' && <ChartView historicalData={historicalData} />}
+      {viewMode === 'data' && <HistoricalDataView historicalData={historicalData} />}
     </>
   )
 }

@@ -1,0 +1,48 @@
+.historicalData {
+  margin-top: 20px;
+  color: #000000;
+}
+
+.historicalData h3 {
+  color: #ffffff;
+}
+
+.recordCard {
+  border: 1px solid #ccc;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  color: #000000;
+}
+
+.recordCard h4 {
+  margin-top: 0;
+  color: #000000;
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  color: #000000;
+}
+
+.fieldItem {
+  color: #000000;
+}
+
+.promotionText {
+  margin-top: 15px;
+  color: #000000;
+}
+
+.promotionPre {
+  white-space: pre-wrap;
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid #ddd;
+  color: #000000;
+}
