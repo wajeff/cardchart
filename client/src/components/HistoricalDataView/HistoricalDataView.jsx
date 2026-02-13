@@ -52,7 +52,7 @@ const HistoricalDataView = ({ historicalData }) => {
             </div>
           )}
         </div>
-      )).reverse()}
+      ))}
     </div>
   )
 }
