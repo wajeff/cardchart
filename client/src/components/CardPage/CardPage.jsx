@@ -30,7 +30,7 @@ const CardPage = ({ card }) => {
     const fetchData = async () => {
       try {
         // Fetch all records for this card from MongoDB
-        const response = await axios.get('http://localhost:3001/api/data?card=amex_cobalt');
+        const response = await axios.get('/api/data?card=amex_cobalt');
         const records = response.data;
 
         console.log('Fetched MongoDB records:', records);
