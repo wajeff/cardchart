@@ -22,11 +22,22 @@ Please extract the following promotional information:
 - totalPoints: Total bonus points offered in the promotion
 - totalSpendRequired: Total spending required to earn all bonus points
 - monthlySpendRequired: Monthly spending required to earn monthly bonus
-- monthlyPoints: Points earned per month when meeting spend requirement
 - promotionDurationMonths: How many months the promotion lasts
 - totalMembershipFee: Annual membership fee (IMPORTANT: Use exact amount with decimals, NOT 15588)
-- monthlyFee: Monthly membership fee
 - dataGatheredAt: Timestamp from when data was gathered (in the last sentence)
+
+Important parsing guidance:
+- Use all captured fields provided, including capturedTexts, capturedLists, capturedData, and any capturedAttributes.
+- Fee aliases can appear as labels like "Annual Fee", "Membership Fee", "Annual Membership Fee".
+- Parse currency formats safely (e.g. "$799", "799", "$12.99/mo").
+- For promotionDurationMonths, use the total campaign duration to earn all bonuses.
+- Do NOT use spend-window phrases like "spend in first 3 months" as promotion duration.
+- If there are staged bonuses (for example "between 15 and 17 months of Cardmembership"), use the final month (17).
+
+Calculation rules:
+- Return totalMembershipFee as the raw annual fee from the offer text (do not pre-scale it).
+- Add totalMembershipFee to totalSpendRequired:
+  totalSpendRequired = totalSpendRequired + totalMembershipFee
 
 Extract accurate values from the text. If a field is not mentioned, use 0.
 `.trim();
@@ -110,10 +121,8 @@ function isSamePromotion(existing, incoming) {
   return existing.totalPoints === incoming.totalPoints &&
          existing.totalSpendRequired === incoming.totalSpendRequired &&
          existing.monthlySpendRequired === incoming.monthlySpendRequired &&
-         existing.monthlyPoints === incoming.monthlyPoints &&
          existing.promotionDurationMonths === incoming.promotionDurationMonths &&
-         existing.totalMembershipFee === incoming.totalMembershipFee &&
-         existing.monthlyFee === incoming.monthlyFee;
+         existing.totalMembershipFee === incoming.totalMembershipFee;
 }
 
 function normalizePromotionValue(value) {
@@ -184,6 +193,160 @@ function extractPromotionText(promotionData, promotionSource = null) {
   return readFromList(firstList, promotionSource || {});
 }
 
+function buildCombinedPromotionText(promotionData, promotionSource = null) {
+  const segments = [];
+
+  const pushSegment = (label, value) => {
+    const normalizedValue = normalizePromotionValue(value);
+    if (!normalizedValue) {
+      return;
+    }
+    segments.push(label ? `${label}: ${normalizedValue}` : normalizedValue);
+  };
+
+  const addCapturedValue = (label, value) => {
+    if (value === null || value === undefined) {
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => addCapturedValue(`${label}[${index}]`, item));
+      return;
+    }
+
+    if (typeof value === 'object') {
+      Object.entries(value).forEach(([key, child]) => addCapturedValue(`${label}.${key}`, child));
+      return;
+    }
+
+    pushSegment(label, value);
+  };
+
+  // Keep configured/primary source first (useful when one field is the canonical promo field).
+  const primaryPromotionText = extractPromotionText(promotionData, promotionSource);
+  pushSegment('primary', primaryPromotionText);
+
+  // Include every captured payload from Browse task:
+  // capturedTexts, capturedLists, capturedData, capturedAttributes, etc.
+  Object.entries(promotionData || {}).forEach(([key, value]) => {
+    if (!key.startsWith('captured')) {
+      return;
+    }
+    addCapturedValue(key, value);
+  });
+
+  return segments.join('\n');
+}
+
+function collectCapturedFromTasks(tasks = []) {
+  const merged = {};
+
+  tasks.forEach((task) => {
+    Object.entries(task || {}).forEach(([key, value]) => {
+      if (!key.startsWith('captured') || value === null || value === undefined) {
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        const existing = Array.isArray(merged[key]) ? merged[key] : [];
+        merged[key] = existing.concat(value);
+        return;
+      }
+
+      if (typeof value === 'object') {
+        const existing = merged[key] && typeof merged[key] === 'object' && !Array.isArray(merged[key])
+          ? merged[key]
+          : {};
+        merged[key] = { ...existing, ...value };
+        return;
+      }
+
+      merged[key] = value;
+    });
+  });
+
+  return merged;
+}
+
+function parseCurrencyLikeNumber(value) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value !== 'string') {
+    return 0;
+  }
+
+  const normalized = value.replace(/,/g, '');
+  const match = normalized.match(/-?\d+(\.\d+)?/);
+  if (!match) {
+    return 0;
+  }
+
+  const parsed = Number(match[0]);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function findNumericByKey(capturedTexts = {}, candidateKeys = []) {
+  const keyMap = new Map(
+    Object.entries(capturedTexts).map(([key, value]) => [key.toLowerCase(), value])
+  );
+
+  for (const key of candidateKeys) {
+    const raw = keyMap.get(key.toLowerCase());
+    const parsed = parseCurrencyLikeNumber(raw);
+    if (parsed > 0) {
+      return parsed;
+    }
+  }
+
+  return 0;
+}
+
+function inferPromotionDurationMonths(promotionText, geminiDuration) {
+  const text = String(promotionText || '');
+
+  // Highest confidence: explicit cardmembership ranges, e.g. "between 15 and 17 months of Cardmembership".
+  const cardMembershipRangeRegexes = [
+    /between\s+(\d+)\s+and\s+(\d+)\s+months?\s+of\s+cardmembership/gi,
+    /(\d+)\s*(?:-|to)\s*(\d+)\s+months?\s+of\s+cardmembership/gi
+  ];
+
+  const rangeCandidates = [];
+  cardMembershipRangeRegexes.forEach((regex) => {
+    for (const match of text.matchAll(regex)) {
+      const high = Number(match[2]);
+      if (Number.isFinite(high) && high > 0) {
+        rangeCandidates.push(high);
+      }
+    }
+  });
+  if (rangeCandidates.length > 0) {
+    return Math.max(...rangeCandidates);
+  }
+
+  // Next: explicit single cardmembership mention.
+  const cardMembershipSingleRegex = /(\d+)\s+months?\s+of\s+cardmembership/gi;
+  const singleCandidates = [];
+  for (const match of text.matchAll(cardMembershipSingleRegex)) {
+    const value = Number(match[1]);
+    if (Number.isFinite(value) && value > 0) {
+      singleCandidates.push(value);
+    }
+  }
+  if (singleCandidates.length > 0) {
+    return Math.max(...singleCandidates);
+  }
+
+  // Fallback to model output.
+  const parsedGeminiDuration = Number(geminiDuration) || 0;
+  if (parsedGeminiDuration > 0) {
+    return parsedGeminiDuration;
+  }
+
+  return 0;
+}
+
 async function processCard({ card, robotId, taskIndex, promotionSource, robotApiKey, geminiApiKey }) {
   // 1. Fetch data from Browse.ai
   const browseResponse = await axios.get(
@@ -195,20 +358,32 @@ async function processCard({ card, robotId, taskIndex, promotionSource, robotApi
     }
   );
 
+  const taskItems = browseResponse.data?.result?.robotTasks?.items || [];
   const resolvedTaskIndex = Number.isInteger(taskIndex)
     ? taskIndex
     : Number(process.env.BROWSE_TASK_INDEX ?? 2);
-  const promotionData = browseResponse.data?.result?.robotTasks?.items?.[resolvedTaskIndex];
+  const promotionData = taskItems?.[resolvedTaskIndex];
 
   if (!promotionData) {
     throw new Error(`No Browse.ai task found for card=${card} at index=${resolvedTaskIndex}`);
   }
 
-  const promotionText = extractPromotionText(promotionData, promotionSource);
+  // Merge captured payload across returned tasks so fields split across tasks are still available.
+  const mergedCapturedPayload = collectCapturedFromTasks(taskItems);
+  const mergedPromotionData = { ...promotionData, ...mergedCapturedPayload };
+
+  const promotionText = buildCombinedPromotionText(mergedPromotionData, promotionSource);
   if (!promotionText) {
-    throw new Error(`No promotion text found for card=${card}. Set promotionSource in cards config.`);
+    throw new Error(`No promotion text found for card=${card}. Check capturedTexts/capturedLists and promotionSource config.`);
   }
-  const promotion = `${promotionText} Data was gathered at ${promotionData.finishedAt}`;
+  const capturedPayload = Object.fromEntries(
+    Object.entries(mergedPromotionData || {}).filter(([key]) => key.startsWith('captured'))
+  );
+  const promotion = `${promotionText}
+
+RAW_CAPTURED_PAYLOAD_JSON:
+${JSON.stringify(capturedPayload)}
+Data was gathered at ${promotionData.finishedAt}`;
 
   // 2. Parse with Gemini
   const ai = new GoogleGenAI({ apiKey: geminiApiKey });
@@ -225,22 +400,41 @@ async function processCard({ card, robotId, taskIndex, promotionSource, robotApi
             totalPoints: { type: 'integer' },
             totalSpendRequired: { type: 'integer' },
             monthlySpendRequired: { type: 'integer' },
-            monthlyPoints: { type: 'integer' },
             promotionDurationMonths: { type: 'integer' },
             totalMembershipFee: { type: 'number' },
-            monthlyFee: { type: 'number' },
             dataGatheredAt: { type: 'integer' }
           }
         }
       },
-      propertyOrdering: ['totalPoints', 'totalSpendRequired', 'monthlySpendRequired', 'monthlyPoints', 'promotionDurationMonths', 'totalMembershipFee', 'monthlyFee', 'dataGatheredAt']
+      propertyOrdering: ['totalPoints', 'totalSpendRequired', 'monthlySpendRequired', 'promotionDurationMonths', 'totalMembershipFee', 'dataGatheredAt']
     }
   });
 
   const parsedData = JSON.parse(geminiResponse.text);
+  const fallbackAnnualFee = findNumericByKey(mergedPromotionData?.capturedTexts, [
+    'Annual Fee',
+    'Annual Membership Fee',
+    'Membership Fee',
+    'Yearly Fee'
+  ]);
   parsedData.forEach((item) => {
-    item.totalMembershipFee = Math.ceil(item.totalMembershipFee);
-    item.monthlyFee = Math.ceil(item.monthlyFee * 100) / 100;
+    const promotionDurationMonths = inferPromotionDurationMonths(
+      promotionText,
+      item.promotionDurationMonths
+    );
+    item.promotionDurationMonths = promotionDurationMonths;
+    let baseTotalMembershipFee = Number(item.totalMembershipFee) || 0;
+    if (baseTotalMembershipFee <= 0 && fallbackAnnualFee > 0) {
+      baseTotalMembershipFee = fallbackAnnualFee;
+    }
+
+    const baseTotalSpendRequired = Number(item.totalSpendRequired) || 0;
+
+    const yearsOfFees = Math.max(1, Math.ceil(promotionDurationMonths / 12));
+    const adjustedMembershipFee = baseTotalMembershipFee * yearsOfFees;
+
+    item.totalMembershipFee = Math.ceil(adjustedMembershipFee);
+    item.totalSpendRequired = Math.ceil(baseTotalSpendRequired + item.totalMembershipFee);
     item.promotionText = promotionText;
     item.dataGatheredAt = Date.now();
   });

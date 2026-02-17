@@ -141,6 +141,9 @@ const ChartView = ({ historicalData }) => {
             title: {
               display: true,
               text: 'Total Points'
+            },
+            ticks: {
+              callback: (value) => Number(value).toLocaleString('en-US')
             }
           }
         }

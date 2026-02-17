@@ -4,10 +4,8 @@ const fieldLabels = {
   totalPoints: 'Total Points',
   totalSpendRequired: 'Total Spend Required',
   monthlySpendRequired: 'Monthly Spend Required',
-  monthlyPoints: 'Monthly Points',
   promotionDurationMonths: 'Promotion Duration (Months)',
   totalMembershipFee: 'Total Membership Fee',
-  monthlyFee: 'Monthly Fee',
   dataGatheredAt: 'Data Gathered At',
   promotionText: 'Promotion Text',
   recordDate: 'Record Date'
@@ -28,6 +26,30 @@ const toDate = (value) => {
   return Number.isNaN(parsed.getTime()) ? null : parsed
 }
 
+const formatInteger = (value) => {
+  const numericValue = typeof value === 'number' ? value : Number(value)
+  if (!Number.isInteger(numericValue)) {
+    return value
+  }
+  return numericValue.toLocaleString('en-US')
+}
+
+const formatValue = (key, value) => {
+  if (key === 'dataGatheredAt') {
+    return toDate(value)?.toLocaleString() || 'Unknown date'
+  }
+
+  if (key.includes('Fee') || key.includes('Spend')) {
+    return `$${formatInteger(value)}`
+  }
+
+  if (key.includes('Points')) {
+    return formatInteger(value)
+  }
+
+  return value
+}
+
 const HistoricalDataView = ({ historicalData }) => {
   if (!historicalData || historicalData.length === 0) {
     return null
@@ -44,16 +66,11 @@ const HistoricalDataView = ({ historicalData }) => {
 
           <div className={styles.fieldGrid}>
             {Object.entries(item)
-              .filter(([key]) => key !== 'promotionText' && key !== '_id' && key !== 'recordDate')
+              .filter(([key]) => key !== 'promotionText' && key !== '_id' && key !== 'recordDate' && key !== 'monthlyPoints' && key !== 'monthlyFee')
               .map(([key, value]) => (
                 <div key={key} className={styles.fieldItem}>
                   <strong>{fieldLabels[key] || key}:</strong>{' '}
-                  {key === 'dataGatheredAt'
-                    ? toDate(value)?.toLocaleString() || 'Unknown date'
-                    : key.includes('Fee') || key.includes('Spend') || key.includes('Points')
-                      ? (key.includes('Fee') || key.includes('Spend') ? `$${value}` : value)
-                      : value
-                  }
+                  {formatValue(key, value)}
                 </div>
               ))}
           </div>
