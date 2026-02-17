@@ -19,9 +19,14 @@ const toDate = (value) => {
   return Number.isNaN(parsed.getTime()) ? null : parsed
 }
 
+const getNewYorkDateString = () => (
+  new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York' })
+)
+
 const CardPage = ({ card }) => {
   const [historicalData, setHistoricalData] = useState([])
-  const [latestPromotion, setLatestPromotion] = useState('')
+  const [latestDataText, setLatestDataText] = useState(`Latest data from ${getNewYorkDateString()}`)
+  const [lastPromotionChangeText, setLastPromotionChangeText] = useState('')
   const [viewMode, setViewMode] = useState('chart')
 
   // Fetch historical data from MongoDB
@@ -30,6 +35,8 @@ const CardPage = ({ card }) => {
 
     const fetchData = async () => {
       try {
+        setLatestDataText(`Latest data from ${getNewYorkDateString()}`)
+
         // Fetch all records for this card from MongoDB
         const response = await axios.get(`/api/data?card=${card}`);
         const records = response.data;
@@ -37,17 +44,17 @@ const CardPage = ({ card }) => {
         console.log('Fetched MongoDB records:', records);
 
         if (records.length === 0) {
-          setLatestPromotion('No data available yet. Cron job will populate data daily.');
+          setLastPromotionChangeText('Last promotion change unavailable (no data yet).');
           return;
         }
 
-        // Set the latest promotion text
+        // Set the last promotion change text from latest record date
         const latestRecord = records[records.length - 1];
         const latestDate = toDate(latestRecord.date)
-        setLatestPromotion(
+        setLastPromotionChangeText(
           latestDate
-            ? `Latest data from ${latestDate.toLocaleDateString()}`
-            : 'Latest data date unavailable'
+            ? `Last promotion change ${latestDate.toLocaleDateString()}`
+            : 'Last promotion change date unavailable'
         )
 
         // Flatten all data points from all records
@@ -62,7 +69,7 @@ const CardPage = ({ card }) => {
 
       } catch (error) {
         console.error('Error fetching data:', error);
-        setLatestPromotion('Error fetching data');
+        setLastPromotionChangeText('Error fetching data');
       }
     };
 
@@ -72,7 +79,8 @@ const CardPage = ({ card }) => {
   return (
     <>
       <h2>{card} - Points History</h2>
-      <p>{latestPromotion}</p>
+      <p>{latestDataText}</p>
+      <p>{lastPromotionChangeText}</p>
 
       {/* View Toggle Buttons */}
       <div className={styles.toggleContainer}>
