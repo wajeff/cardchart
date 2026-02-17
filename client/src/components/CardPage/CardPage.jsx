@@ -4,6 +4,21 @@ import styles from './CardPage.module.css'
 import ChartView from '../ChartView/ChartView'
 import HistoricalDataView from '../HistoricalDataView/HistoricalDataView'
 
+const toDate = (value) => {
+  if (value === null || value === undefined) {
+    return null
+  }
+
+  if (typeof value === 'string') {
+    const numericValue = Number(value)
+    const parsed = Number.isNaN(numericValue) ? new Date(value) : new Date(numericValue)
+    return Number.isNaN(parsed.getTime()) ? null : parsed
+  }
+
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
 const CardPage = ({ card }) => {
   const [historicalData, setHistoricalData] = useState([])
   const [latestPromotion, setLatestPromotion] = useState('')
@@ -16,7 +31,7 @@ const CardPage = ({ card }) => {
     const fetchData = async () => {
       try {
         // Fetch all records for this card from MongoDB
-        const response = await axios.get('/api/data?card=amex_cobalt');
+        const response = await axios.get(`/api/data?card=${card}`);
         const records = response.data;
 
         console.log('Fetched MongoDB records:', records);
@@ -28,7 +43,12 @@ const CardPage = ({ card }) => {
 
         // Set the latest promotion text
         const latestRecord = records[records.length - 1];
-        setLatestPromotion(`Latest data from ${new Date(latestRecord.date).toLocaleDateString()}`);
+        const latestDate = toDate(latestRecord.date)
+        setLatestPromotion(
+          latestDate
+            ? `Latest data from ${latestDate.toLocaleDateString()}`
+            : 'Latest data date unavailable'
+        )
 
         // Flatten all data points from all records
         const allDataPoints = records.flatMap(record =>
@@ -51,7 +71,7 @@ const CardPage = ({ card }) => {
 
   return (
     <>
-      <h2>Amex Cobalt - Points History</h2>
+      <h2>{card} - Points History</h2>
       <p>{latestPromotion}</p>
 
       {/* View Toggle Buttons */}

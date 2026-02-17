@@ -1,0 +1,14 @@
+[
+  {
+    "card": "amex_cobalt",
+    "robotIdEnv": "VITE_AMEX_COBALT_ROBOT_ID"
+  },
+  {
+    "card": "amex_platinum",
+    "robotIdEnv": "VITE_AMEX_PLATINUM_ROBOT_ID",
+    "taskIndex": 1,
+    "promotionSource": {
+      "type": "list"
+    }
+  }
+]

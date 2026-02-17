@@ -3,6 +3,21 @@ import { Chart } from 'chart.js/auto'
 import 'chartjs-adapter-date-fns'
 import styles from './ChartView.module.css'
 
+const toDate = (value) => {
+  if (value === null || value === undefined) {
+    return null
+  }
+
+  if (typeof value === 'string') {
+    const numericValue = Number(value)
+    const parsed = Number.isNaN(numericValue) ? new Date(value) : new Date(numericValue)
+    return Number.isNaN(parsed.getTime()) ? null : parsed
+  }
+
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
 const ChartView = ({ historicalData }) => {
   const canvasRef = useRef(null)
 
@@ -26,15 +41,30 @@ const ChartView = ({ historicalData }) => {
       existingChart.destroy()
     }
 
+    const chartData = historicalData
+      .map((item) => {
+        const dateValue = toDate(item.dataGatheredAt)
+        if (!dateValue) {
+          return null
+        }
+
+        return {
+          x: dateValue,
+          y: item.totalPoints
+        }
+      })
+      .filter(Boolean)
+
+    if (chartData.length === 0) {
+      return;
+    }
+
     const chart = new Chart(ctx, {
       type: 'line',
       data: {
         datasets: [{
           label: 'Total Points',
-          data: historicalData.map((item) => ({
-            x: new Date(item.dataGatheredAt),
-            y: item.totalPoints
-          })),
+          data: chartData,
           borderColor: 'rgb(75, 192, 192)',
           pointRadius: 6,
           pointHoverRadius: 8,

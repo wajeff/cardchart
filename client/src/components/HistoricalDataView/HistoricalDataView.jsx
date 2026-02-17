@@ -13,6 +13,21 @@ const fieldLabels = {
   recordDate: 'Record Date'
 }
 
+const toDate = (value) => {
+  if (value === null || value === undefined) {
+    return null
+  }
+
+  if (typeof value === 'string') {
+    const numericValue = Number(value)
+    const parsed = Number.isNaN(numericValue) ? new Date(value) : new Date(numericValue)
+    return Number.isNaN(parsed.getTime()) ? null : parsed
+  }
+
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
 const HistoricalDataView = ({ historicalData }) => {
   if (!historicalData || historicalData.length === 0) {
     return null
@@ -24,7 +39,7 @@ const HistoricalDataView = ({ historicalData }) => {
       {historicalData.map((item, idx) => (
         <div key={idx} className={styles.recordCard}>
           <h4>
-            Record #{historicalData.length - idx} - {new Date(item.dataGatheredAt).toLocaleString()}
+            Record #{historicalData.length - idx} - {toDate(item.dataGatheredAt)?.toLocaleString() || 'Unknown date'}
           </h4>
 
           <div className={styles.fieldGrid}>
@@ -34,7 +49,7 @@ const HistoricalDataView = ({ historicalData }) => {
                 <div key={key} className={styles.fieldItem}>
                   <strong>{fieldLabels[key] || key}:</strong>{' '}
                   {key === 'dataGatheredAt'
-                    ? new Date(value).toLocaleString()
+                    ? toDate(value)?.toLocaleString() || 'Unknown date'
                     : key.includes('Fee') || key.includes('Spend') || key.includes('Points')
                       ? (key.includes('Fee') || key.includes('Spend') ? `$${value}` : value)
                       : value
