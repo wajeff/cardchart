@@ -3,8 +3,8 @@ import styles from './Navbar.module.css'
 const Navbar = () => {
   return (
     <nav>
-      <ul>
-        <li>
+      <ul className={styles.navList}>
+        <li className={styles.navItem}>
           <Link to ='/'> Home </Link>
         </li>
       </ul>
