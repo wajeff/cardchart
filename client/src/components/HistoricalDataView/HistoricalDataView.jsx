@@ -55,13 +55,23 @@ const HistoricalDataView = ({ historicalData }) => {
     return null
   }
 
+  const sortedHistoricalData = [...historicalData].sort((a, b) => {
+    const dateA = toDate(a.dataGatheredAt)
+    const dateB = toDate(b.dataGatheredAt)
+
+    if (!dateA && !dateB) return 0
+    if (!dateA) return 1
+    if (!dateB) return -1
+    return dateB - dateA
+  })
+
   return (
     <div className={styles.historicalData}>
       <h3>All Historical Data</h3>
-      {historicalData.map((item, idx) => (
+      {sortedHistoricalData.map((item, idx) => (
         <div key={idx} className={styles.recordCard}>
           <h4>
-            Record #{historicalData.length - idx} - {toDate(item.dataGatheredAt)?.toLocaleString() || 'Unknown date'}
+            Record #{idx + 1} - {toDate(item.dataGatheredAt)?.toLocaleString() || 'Unknown date'}
           </h4>
 
           <div className={styles.fieldGrid}>
