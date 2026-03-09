@@ -9,6 +9,7 @@ const Home = () => {
       <ul className={styles.linkContainer}>
         <Link to='/amex_cobalt'> Amex Cobalt</Link>
         <Link to='/amex_platinum'> Amex Platinum</Link>
+        <Link to='/amex_gold'> Amex Gold</Link>
       </ul>
       
 

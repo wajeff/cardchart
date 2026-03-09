@@ -9,13 +9,18 @@ const toDate = (value) => {
     return null
   }
 
+  const normalizeEpoch = (num) => {
+    // Values below 1e12 are likely Unix seconds, not milliseconds.
+    return Math.abs(num) < 1e12 ? num * 1000 : num
+  }
+
   if (typeof value === 'string') {
     const numericValue = Number(value)
-    const parsed = Number.isNaN(numericValue) ? new Date(value) : new Date(numericValue)
+    const parsed = Number.isNaN(numericValue) ? new Date(value) : new Date(normalizeEpoch(numericValue))
     return Number.isNaN(parsed.getTime()) ? null : parsed
   }
 
-  const parsed = new Date(value)
+  const parsed = typeof value === 'number' ? new Date(normalizeEpoch(value)) : new Date(value)
   return Number.isNaN(parsed.getTime()) ? null : parsed
 }
 
