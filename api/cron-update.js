@@ -65,7 +65,7 @@ Each key must map to an object with:
 - totalSpendRequired (integer)
 - promotionDurationMonths (integer)
 - totalMembershipFee (number)
-- dataGatheredAt (integer unix milliseconds)
+- dataGatheredAt (take the current time of the prompt)
 
 Please extract the following promotional information:
 - totalPoints: Total bonus points offered in the promotion

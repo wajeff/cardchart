@@ -33,23 +33,23 @@ export async function scrapeCards() {
 
   //AMEX_Platinum Scrape
 
-  // await page.goto(
-  //   "https://www.americanexpress.com/en-ca/charge-cards/the-platinum-card/",
-  // );
-  // promoText = await page
-  //   .locator(".sc_mo_full-screen-double-offer_rightColumn")
-  //   .first()
-  //   .textContent();
-  // console.log(promoText);
-  // map.set("amex_platinum", promoText);
+  await page.goto(
+    "https://www.americanexpress.com/en-ca/charge-cards/the-platinum-card/",
+  );
+  promoText = await page
+    .locator(".sc_mo_full-screen-double-offer_rightColumn")
+    .first()
+    .textContent();
+  console.log(promoText);
+  map.set("amex_platinum", promoText);
 
-  // cardFeeText = await page
-  // .locator('[data-qe-id="NewMemberBanner"]')
-  // .locator('[data-qe-id="Row"]')
-  // .nth(0)
-  // .textContent();
-  // console.log(cardFeeText)
-  // map.set('amex_platinum', map.get("amex_platinum") + cardFeeText)
+  cardFeeText = await page
+  .locator('[data-qe-id="NewMemberBanner"]')
+  .locator('[data-qe-id="Row"]')
+  .nth(0)
+  .textContent();
+  console.log(cardFeeText)
+  map.set('amex_platinum', map.get("amex_platinum") + cardFeeText)
 
   //AMEX_Gold Scrape
 
