@@ -1,38 +1,56 @@
-import axios from 'axios'
-import { useState, useEffect } from 'react'
-import styles from './CardPage.module.css'
-import ChartView from '../ChartView/ChartView'
-import HistoricalDataView from '../HistoricalDataView/HistoricalDataView'
+import axios from "axios";
+import { useState, useEffect } from "react";
+import styles from "./CardPage.module.css";
+import ChartView from "../ChartView/ChartView";
+import HistoricalDataView from "../HistoricalDataView/HistoricalDataView";
+
+function cleanCardName(input) {
+  
+  let string = String(input)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, " ");
+
+  return string
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 
 const toDate = (value) => {
   if (value === null || value === undefined) {
-    return null
+    return null;
   }
 
   const normalizeEpoch = (num) => {
-    // Values below 1e12 are likely Unix seconds, not milliseconds.
-    return Math.abs(num) < 1e12 ? num * 1000 : num
+    return Math.abs(num) < 1e12 ? num * 1000 : num;
+  };
+
+  if (typeof value === "string") {
+    const numericValue = Number(value);
+    const parsed = Number.isNaN(numericValue)
+      ? new Date(value)
+      : new Date(normalizeEpoch(numericValue));
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
 
-  if (typeof value === 'string') {
-    const numericValue = Number(value)
-    const parsed = Number.isNaN(numericValue) ? new Date(value) : new Date(normalizeEpoch(numericValue))
-    return Number.isNaN(parsed.getTime()) ? null : parsed
-  }
+  const parsed =
+    typeof value === "number"
+      ? new Date(normalizeEpoch(value))
+      : new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
 
-  const parsed = typeof value === 'number' ? new Date(normalizeEpoch(value)) : new Date(value)
-  return Number.isNaN(parsed.getTime()) ? null : parsed
-}
-
-const getNewYorkDateString = () => (
-  new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York' })
-)
+const getNewYorkDateString = () =>
+  new Date().toLocaleDateString("en-US", { timeZone: "America/New_York" });
 
 const CardPage = ({ card }) => {
-  const [historicalData, setHistoricalData] = useState([])
-  const [latestDataText, setLatestDataText] = useState(`Latest data from ${getNewYorkDateString()}`)
-  const [lastPromotionChangeText, setLastPromotionChangeText] = useState('')
-  const [viewMode, setViewMode] = useState('chart')
+  const [historicalData, setHistoricalData] = useState([]);
+  const [latestDataText, setLatestDataText] = useState(
+    `Latest data from ${getNewYorkDateString()}`,
+  );
+  const [lastPromotionChangeText, setLastPromotionChangeText] = useState("");
+  const [viewMode, setViewMode] = useState("chart");
 
   // Fetch historical data from MongoDB
   useEffect(() => {
@@ -40,41 +58,42 @@ const CardPage = ({ card }) => {
 
     const fetchData = async () => {
       try {
-        setLatestDataText(`Latest data from ${getNewYorkDateString()}`)
+        setLatestDataText(`Latest data from ${getNewYorkDateString()}`);
 
         // Fetch all records for this card from MongoDB
         const response = await axios.get(`/api/data?card=${card}`);
         const records = response.data;
 
-        console.log('Fetched MongoDB records:', records);
+        console.log("Fetched MongoDB records:", records);
 
         if (records.length === 0) {
-          setLastPromotionChangeText('Last promotion change unavailable (no data yet).');
+          setLastPromotionChangeText(
+            "Last promotion change unavailable (no data yet).",
+          );
           return;
         }
 
         // Set the last promotion change text from latest record date
         const latestRecord = records[records.length - 1];
-        const latestDate = toDate(latestRecord.date)
+        const latestDate = toDate(latestRecord.date);
         setLastPromotionChangeText(
           latestDate
             ? `Last promotion change ${latestDate.toLocaleDateString()}`
-            : 'Last promotion change date unavailable'
-        )
-
-        // Flatten all data points from all records
-        const allDataPoints = records.flatMap(record =>
-          record.data.map(item => ({
-            ...item,
-            recordDate: record.date
-          }))
+            : "Last promotion change date unavailable",
         );
 
-        setHistoricalData(allDataPoints)
+        // Flatten all data points from all records
+        const allDataPoints = records.flatMap((record) =>
+          record.data.map((item) => ({
+            ...item,
+            recordDate: record.date,
+          })),
+        );
 
+        setHistoricalData(allDataPoints);
       } catch (error) {
-        console.error('Error fetching data:', error);
-        setLastPromotionChangeText('Error fetching data');
+        console.error("Error fetching data:", error);
+        setLastPromotionChangeText("Error fetching data");
       }
     };
 
@@ -83,30 +102,40 @@ const CardPage = ({ card }) => {
 
   return (
     <>
-      <h2>{card} - Points History</h2>
+      <h2>{cleanCardName(card)} - Points History</h2>
       <p>{latestDataText}</p>
       <p>{lastPromotionChangeText}</p>
 
       {/* View Toggle Buttons */}
       <div className={styles.toggleContainer}>
         <button
-          onClick={() => setViewMode('chart')}
-          className={viewMode === 'chart' ? styles.toggleButtonActive : styles.toggleButton}
+          onClick={() => setViewMode("chart")}
+          className={
+            viewMode === "chart"
+              ? styles.toggleButtonActive
+              : styles.toggleButton
+          }
         >
           Chart View
         </button>
         <button
-          onClick={() => setViewMode('data')}
-          className={viewMode === 'data' ? styles.toggleButtonActive : styles.toggleButton}
+          onClick={() => setViewMode("data")}
+          className={
+            viewMode === "data"
+              ? styles.toggleButtonActive
+              : styles.toggleButton
+          }
         >
           All Data View
         </button>
       </div>
 
-      {viewMode === 'chart' && <ChartView historicalData={historicalData} />}
-      {viewMode === 'data' && <HistoricalDataView historicalData={historicalData} />}
+      {viewMode === "chart" && <ChartView historicalData={historicalData} />}
+      {viewMode === "data" && (
+        <HistoricalDataView historicalData={historicalData} />
+      )}
     </>
-  )
-}
+  );
+};
 
-export default CardPage
+export default CardPage;

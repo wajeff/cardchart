@@ -3,6 +3,7 @@
 import { GoogleGenAI } from "@google/genai";
 import mongoose from "mongoose";
 import { scrapeCards } from "../scripts/scrape.ts";
+import { fail } from "node:assert";
 
 // MongoDB Schema
 const DataSchema = new mongoose.Schema({
@@ -15,50 +16,6 @@ let DataModel;
 let isConnected = false;
 
 const EXTRACTION_PROMPT = `
-Extract the following promotional information:
-- totalPoints: Total bonus points offered in the promotion
-- totalSpendRequired: Total spending required to earn all bonus points
-- monthlySpendRequired: Monthly spending required to earn monthly bonus
-- promotionDurationMonths: How many months the promotion lasts
-- totalMembershipFee: Annual membership fee (IMPORTANT: Use exact amount with decimals, NOT 15588)
-
-Important parsing guidance:
-- Use all captured fields provided, including capturedTexts, capturedLists, capturedData, and any capturedAttributes.
-- Fee aliases can appear as labels like "Annual Fee", "Membership Fee", "Annual Membership Fee".
-- Parse currency formats safely (e.g. "$799", "799", "$12.99/mo").
-- For promotionDurationMonths, use the total campaign duration to earn all bonuses.
-- Do NOT use spend-window phrases like "spend in first 3 months" as promotion duration.
-- If there are staged bonuses (for example "between 15 and 17 months of Cardmembership"), use the final month (17).
-
-Calculation rules:
-- Return totalMembershipFee as the raw annual fee from the offer text (do not pre-scale it).
-- Add totalMembershipFee to totalSpendRequired:
-  totalSpendRequired = totalSpendRequired + totalMembershipFee
-
-Extract accurate values from the text. If a field is not mentioned, use 0.
-`.trim();
-
-// Connect to MongoDB
-async function connectDB() {
-  if (isConnected) {
-    return;
-  }
-
-  await mongoose.connect(process.env.MONGO_URI);
-  DataModel = mongoose.models.Data || mongoose.model("Data", DataSchema);
-  isConnected = true;
-}
-const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY;
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
-async function geminiParse(promotion) {
-  const offersObject = Object.fromEntries(promotion);
-
-  const geminiResponse = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: `Input JSON:
-    ${JSON.stringify(offersObject)}
-
 Return ONLY a JSON object where each key is the same card key from Input JSON.
 Each key must map to an object with:
 - totalPoints (integer)
@@ -76,9 +33,54 @@ membershipfee total cost is multiplied by two.
 - totalSpendRequired: Total spending required to earn all bonus points. Look for text similiar to : 'earn x points when you spend $x
 ' and its conditions. Once done, sum totalMembershipFee
 
-Extract accurate values from the text. If a field is not mentioned, use 0.`,
+Extract accurate values from the text. If a field is not mentioned, use 0.
+`.trim();
 
+const RETRY_EXTRACTION_PROMPT = `
+You are retrying a previous extraction because one or more fields were returned as 0.
 
+Return ONLY a JSON object with the same card keys as Input JSON.
+Each key must map to:
+- totalPoints (integer)
+- totalSpendRequired (integer)
+- promotionDurationMonths (integer)
+- totalMembershipFee (number)
+- dataGatheredAt (integer)
+
+Important retry rule:
+- Re-read the text carefully and avoid returning 0 unless the value is truly absent.
+- If any value can be inferred from explicit offer text, return that value instead of 0.
+- Keep the output schema exact.
+
+Please extract:
+- totalPoints: Total bonus points offered in the promotion.
+- promotionDurationMonths: Total campaign duration to earn all bonuses.
+- totalMembershipFee: Annual membership fee (exact amount, with decimals if present). If duration > 12 months, multiply annual fee by number of yearly fees required.
+- totalSpendRequired: Total spend required to earn all bonus points, then add totalMembershipFee.
+
+Extract accurate values from the text. Only use 0 when a field is genuinely not present.
+`.trim();
+
+// Connect to MongoDB
+async function connectDB() {
+  if (isConnected) {
+    return;
+  }
+
+  await mongoose.connect(process.env.MONGO_URI);
+  DataModel = mongoose.models.Data || mongoose.model("Data", DataSchema);
+  isConnected = true;
+}
+const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY;
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+
+async function geminiParse(promotion, prompt) {
+  const offersObject = Object.fromEntries(promotion);
+
+  const geminiResponse = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: `Input JSON:
+    ${JSON.stringify(offersObject)} ${prompt}`,
     config: {
       responseMimeType: "application/json",
       responseJsonSchema: {
@@ -115,12 +117,34 @@ export default async function handler(req, res) {
   const offersMap = await scrapeCards();
   console.log(offersMap);
 
-  const parsedObject = await geminiParse(offersMap);
-  console.log(parsedObject)
-  if (!parsedObject || typeof parsedObject !== "object") throw new Error("geminiParse returned invalid object");
+  const parsedObject = await geminiParse(offersMap, EXTRACTION_PROMPT);
+  console.log(parsedObject);
+  if (!parsedObject || typeof parsedObject !== "object")
+    throw new Error("geminiParse returned invalid object");
 
+  //Gemini Parse 0 Value Retry
+
+  //add a while object !contains 0 loop
   const parsedMap = new Map(Object.entries(parsedObject));
-  console.log(parsedMap)
+  console.log(parsedMap);
+
+  let needsRetry = false;
+  let failedCard = '';
+  for (const [key, value] of parsedMap) {
+    for (const [attri, attriValue] of Object.entries(value)) {
+      if (attriValue === 0) {
+        needsRetry = true;
+        failedCard = key;
+        break;
+      }
+    }
+    if (needsRetry) break;
+  }
+
+  if (needsRetry) {
+    const parsedFixObject = await geminiParse(failedCard, RETRY_EXTRACTION_PROMPT);
+    parsedMap.set(failedCard, parsedFixObject[failedCard]);
+  }
 
   for (const [key, value] of parsedMap) {
     const newData = value;

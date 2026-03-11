@@ -1,8 +1,11 @@
+.title{
+    text-align: center;
+}
 .linkContainer{
     list-style: none;
     display:flex;
     flex-direction: column;
 }
 .linkContainer *{
-    color: white;
+    color: #000000;
 }
