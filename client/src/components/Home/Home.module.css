@@ -3,6 +3,10 @@
   height: 500px;
   margin: 0 auto;
   background-color: #f5f5f7;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 .title {
   margin: 0 auto 1%;
@@ -19,29 +23,36 @@
   height: 20px;
 }
 .cardsContainer{
-  width: var(--hero-width);
-  margin: 0 auto;
-}
-.cardLink{
-  display: inline-block;
-  transform: rotate(270deg) translateX(-80px);
-}
-.cardLink:hover{
-  transform: rotate(270deg) translateX(0px);
-}
-.card{
-  max-width: 50%;
-  height: auto;
-  flex: 0 0 auto;
-}
-.linkContainer {
+  width: fit-content;
+  margin: auto auto 0;
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  flex-wrap: nowrap;
-  padding: 0;
-  margin: 0;
+  height: auto;
+  overflow: visible;
 }
-.linkContainer * {
-  color: #000000;
+.card{
+  flex: 0 0 auto;
+  width: 240px; 
+  transform: rotate(270deg) translateX(0px);
+  height: auto;
+}
+
+.card + .card{
+  margin-left: -170px;
+}
+
+.card:hover{
+  transform: rotate(270deg) translateX(20px);
+}
+
+.cardImage{
+  width: 100%;
+  max-width: none;
+  height: auto;
+  display: block;
+}
+
+.card > a{
+  display: block;
+  line-height: 0;
 }

@@ -9,25 +9,44 @@ const Home = () => {
         <input id="searchBar" className={styles.search}></input>
 
         <section className={styles.cardsContainer}>
-          <ul className={styles.linkContainer}>
-            <Link to="/amex_cobalt" aria-label="Amex Cobalt" className={styles.cardLink}>
+          <div className={styles.card}>
+            <Link to="/amex_cobalt" aria-label="Amex Cobalt">
               <img
                 src="/explorer_2019_ca_di_dod_480x304.avif"
                 alt="Amex Cobalt"
-                className={styles.card}
+                className={styles.cardImage}
               />
             </Link>
+          </div>
 
-            <Link to="/amex_platinum" className={styles.cardLink}>
+          <div className={styles.card}>
+            <Link to="/amex_platinum">
               <img
-                src="/explorer_2019_ca_di_dod_480x304.avif"
+                src="/platinum.avif"
                 alt="Amex Cobalt"
-                className={styles.card}
+                className={styles.cardImage}
               />
             </Link>
+          </div>
 
-            <Link to="/amex_gold"> Amex Gold</Link>
-          </ul>
+          <div className={styles.card}>
+            <Link to="/amex_gold">
+              <img
+                src="/gold-card.avif"
+                alt="Amex Cobalt"
+                className={styles.cardImage}
+              />
+            </Link>
+          </div>
+          <div className={styles.card}>
+            <Link to="/amex_gold">
+              <img
+                src="/td_first_class.png"
+                alt="Amex Cobalt"
+                className={styles.cardImage}
+              />
+            </Link>
+          </div>
         </section>
       </div>
     </div>
