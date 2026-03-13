@@ -15,6 +15,7 @@ function App() {
         <Route path="/amex_cobalt" element={<CardPage card="amex_cobalt" />} />
         <Route path="/amex_platinum" element={<CardPage card="amex_platinum" />} />
         <Route path="/amex_gold" element={<CardPage card="amex_gold" />} />
+        <Route path="/td_first_class" element={<CardPage card="td_first_class" />} />
       </Routes>
     </Router>
   )

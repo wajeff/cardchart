@@ -70,7 +70,27 @@ export async function scrapeCards() {
   .textContent();
   console.log(cardFeeText)
   map.set('amex_gold', map.get("amex_gold") + cardFeeText)
+
+
+  //TD_First_Class Scrape
+  await page.goto(
+    "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/aeroplan-visa-infinite-card?sourcecode=A0899&ranMID=39732&ranEAID=GaCy8kZbhuw&ranSiteID=GaCy8kZbhuw-O2rQqmu3K_llxaVwplJZFw",
+  );
+  promoText = await page
+    .locator(".cmp-banner-product-right-aligned__offer-text")
+    .locator(".cmp-text")
+    .textContent();
+  console.log(promoText);
+  map.set("td_first_class", promoText);
+
+  cardFeeText = await page
+  .locator('.cmp-banner-product-right-aligned__list')
+  .textContent();
+  console.log(cardFeeText)
+  map.set('td_first_class', map.get("td_first_class") + cardFeeText)
+
   await browser.close();
 
   return map;
 }
+

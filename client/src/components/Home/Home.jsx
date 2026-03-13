@@ -39,7 +39,7 @@ const Home = () => {
             </Link>
           </div>
           <div className={styles.card}>
-            <Link to="/amex_gold">
+            <Link to="/td_first_class">
               <img
                 src="/td_first_class.png"
                 alt="Amex Cobalt"
