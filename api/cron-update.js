@@ -3,7 +3,6 @@
 import { GoogleGenAI } from "@google/genai";
 import mongoose from "mongoose";
 import { scrapeCards } from "../scripts/scrape.ts";
-import { fail } from "node:assert";
 
 // MongoDB Schema
 const DataSchema = new mongoose.Schema({
@@ -12,7 +11,6 @@ const DataSchema = new mongoose.Schema({
   data: Array,
 });
 
-let DataModel;
 let isConnected = false;
 
 const EXTRACTION_PROMPT = `
@@ -22,7 +20,7 @@ Each key must map to an object with:
 - totalSpendRequired (integer)
 - promotionDurationMonths (integer)
 - totalMembershipFee (number)
-- dataGatheredAt (take the current time of the prompt)
+- dataGatheredAt: Return the current Unix timestamp in milliseconds (UTC), 13 digits.
 
 Please extract the following promotional information:
 - totalPoints: Total bonus points offered in the promotion
@@ -68,14 +66,19 @@ async function connectDB() {
   }
 
   await mongoose.connect(process.env.MONGO_URI);
-  DataModel = mongoose.models.Data || mongoose.model("Data", DataSchema);
   isConnected = true;
 }
 const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY;
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 async function geminiParse(promotion, prompt) {
-  const offersObject = Object.fromEntries(promotion);
+  let offersObject = '';
+  if(promotion instanceof Map){
+     offersObject = Object.fromEntries(promotion);
+  }
+  else{
+    offersObject = promotion
+  }
 
   const geminiResponse = await ai.models.generateContent({
     model: "gemini-2.5-flash",
@@ -142,14 +145,17 @@ export default async function handler(req, res) {
   }
 
   if (needsRetry) {
-    const parsedFixObject = await geminiParse(failedCard, RETRY_EXTRACTION_PROMPT);
-    parsedMap.set(failedCard, parsedFixObject[failedCard]);
+    const retryInput = { [failedCard]: offersMap.get(failedCard) };
+  const parsedFixObject = await geminiParse(retryInput, RETRY_EXTRACTION_PROMPT);
+  parsedMap.set(failedCard, parsedFixObject[failedCard]);
+
   }
 
   for (const [key, value] of parsedMap) {
     const newData = value;
+    const CardModel = mongoose.models[key] || mongoose.model(key, DataSchema, key);
     const latest =
-      (await DataModel.findOne({ card: key }).sort({ date: -1 })) || undefined;
+      (await CardModel.findOne().sort({ date: -1 })) || undefined;
     const latestData = latest?.data?.[0];
     const isSame =
       latestData &&
@@ -160,7 +166,7 @@ export default async function handler(req, res) {
       latestData.totalMembershipFee === newData.totalMembershipFee;
 
     if (!isSame) {
-      const doc = DataModel({
+      const doc = CardModel({
         card: key,
         date: Date.now(),
         data: [newData],
