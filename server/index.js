@@ -37,13 +37,25 @@ const DataModel = mongoose.model('Data', DataSchema);
 // API route
 
 app.get('/api/data', async (req, res) => {
-  const { card } = req.query;
+  try {
+    const { card } = req.query;
+    if (!card) {
+      const results = await DataModel.find({}).sort({ date: 1 });
+      return res.json(results);
+    }
 
-  // Filter by card if provided, otherwise return all
-  const query = card ? { card } : {};
-  const results = await DataModel.find(query).sort({ date: 1 });
+    const collection = mongoose.connection.collection(card);
+    const directResults = await collection.find({}).sort({ date: 1 }).toArray();
+    if (directResults.length > 0) {
+      return res.json(directResults);
+    }
 
-  res.json(results);
+    const legacyResults = await DataModel.find({ card }).sort({ date: 1 });
+    return res.json(legacyResults);
+  } catch (error) {
+    console.error('API error:', error);
+    return res.status(500).json({ error: error.message });
+  }
 });
 
 app.post('/api/data', async (req, res) => {

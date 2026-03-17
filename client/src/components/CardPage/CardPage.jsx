@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import styles from "./CardPage.module.css";
 import ChartView from "../ChartView/ChartView";
 import HistoricalDataView from "../HistoricalDataView/HistoricalDataView";
+import cardAssets from "../../cardAssets";
 
 function cleanCardName(input) {
   
@@ -15,6 +16,7 @@ function cleanCardName(input) {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 }
+
 
 
 const toDate = (value) => {
@@ -45,6 +47,7 @@ const getNewYorkDateString = () =>
   new Date().toLocaleDateString("en-US", { timeZone: "America/New_York" });
 
 const CardPage = ({ card }) => {
+  const cardImg = cardAssets[card]
   const [historicalData, setHistoricalData] = useState([]);
   const [latestDataText, setLatestDataText] = useState(
     `Latest data from ${getNewYorkDateString()}`,
@@ -101,8 +104,9 @@ const CardPage = ({ card }) => {
   }, [card]);
 
   return (
-    <>
+    <div className={styles.cardPageBody}>
       <h2>{cleanCardName(card)} - Points History</h2>
+      <img src={cardImg?.src}></img>
       <p>{latestDataText}</p>
       <p>{lastPromotionChangeText}</p>
 
@@ -134,7 +138,7 @@ const CardPage = ({ card }) => {
       {viewMode === "data" && (
         <HistoricalDataView historicalData={historicalData} />
       )}
-    </>
+    </div>
   );
 };
 

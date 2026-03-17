@@ -1,5 +1,6 @@
 import styles from "./Home.module.css";
 import { Link } from "react-router-dom";
+import cardAssets from "../../cardAssets";
 
 const Home = () => {
   return (
@@ -16,7 +17,7 @@ const Home = () => {
           <div className={`${styles.orbit} ${styles.orbitOne}`}>
             <Link to="/amex_cobalt" aria-label="Amex Cobalt" className={styles.orbitCard}>
               <img
-                src="/explorer_2019_ca_di_dod_480x304.avif"
+                src={cardAssets['amex_cobalt']?.src}
                 alt="Amex Cobalt"
                 className={styles.cardImage}
               />
@@ -26,7 +27,7 @@ const Home = () => {
           <div className={`${styles.orbit} ${styles.orbitTwo}`}>
             <Link to="/amex_platinum" aria-label="Amex Platinum" className={styles.orbitCard}>
               <img
-                src="/platinum.avif"
+                src={cardAssets['amex_platinum']?.src}
                 alt="Amex Platinum"
                 className={styles.cardImage}
               />
@@ -36,7 +37,7 @@ const Home = () => {
           <div className={`${styles.orbit} ${styles.orbitThree}`}>
             <Link to="/amex_gold" aria-label="Amex Gold" className={styles.orbitCard}>
               <img
-                src="/gold-card.avif"
+                src={cardAssets['amex_gold']?.src}
                 alt="Amex Gold"
                 className={styles.cardImage}
               />
@@ -46,8 +47,17 @@ const Home = () => {
           <div className={`${styles.orbit} ${styles.orbitFour}`}>
             <Link to="/td_first_class" aria-label="TD First Class" className={styles.orbitCard}>
               <img
-                src="/td_first_class.png"
+                src={cardAssets['td_first_class']?.src}
                 alt="TD First Class"
+                className={styles.cardImage}
+              />
+            </Link>
+          </div>
+          <div className={`${styles.orbit} ${styles.orbitFive}`}>
+            <Link to="/scotia_visa_infinte_privilege" aria-label="Scotiabank Visa Infinite" className={styles.orbitCard}>
+              <img
+                src={cardAssets['scotia_visa_infinte_privilege']?.src}
+                alt="Scotiabank Visa Infinite"
                 className={styles.cardImage}
               />
             </Link>

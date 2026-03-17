@@ -65,20 +65,27 @@
 .orbitTwo{
   width: min(56vw, 540px);
   height: min(56vw, 540px);
-  animation-duration: 13s;
+  animation-duration: 15s;
   animation-direction: reverse;
 }
 
 .orbitThree{
   width: min(48vw, 460px);
   height: min(48vw, 460px);
-  animation-duration: 10s;
+  animation-duration: 13s;
 }
 
 .orbitFour{
   width: min(40vw, 380px);
   height: min(40vw, 380px);
-  animation-duration: 8s;
+  animation-duration: 11s;
+  animation-direction: reverse;
+}
+
+.orbitFive{
+  width: min(40vw, 380px);
+  height: min(40vw, 380px);
+  animation-duration: 9s;
   animation-direction: reverse;
 }
 
