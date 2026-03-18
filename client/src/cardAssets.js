@@ -11,12 +11,8 @@ const cardAssets = {
     src: "/amex_platinum.avif",
     alt: "Amex Platinum card",
   },
-  scotia_visa_infinte_privilege: {
-    src: "/scotia_visa_infinte_privilege.png",
-    alt: "Scotia Visa Infinite Privilege card",
-  },
   scotia_visa_infinite_privilege: {
-    src: "/scotia_visa_infinte_privilege.png",
+    src: "/scotia_visa_infinite_privilege.png",
     alt: "Scotia Visa Infinite Privilege card",
   },
   td_first_class: {

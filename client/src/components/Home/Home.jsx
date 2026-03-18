@@ -54,9 +54,9 @@ const Home = () => {
             </Link>
           </div>
           <div className={`${styles.orbit} ${styles.orbitFive}`}>
-            <Link to="/scotia_visa_infinte_privilege" aria-label="Scotiabank Visa Infinite" className={styles.orbitCard}>
+            <Link to="/scotia_visa_infinite_privilege" aria-label="Scotiabank Visa Infinite" className={styles.orbitCard}>
               <img
-                src={cardAssets['scotia_visa_infinte_privilege']?.src}
+                src={cardAssets['scotia_visa_infinite_privilege']?.src}
                 alt="Scotiabank Visa Infinite"
                 className={styles.cardImage}
               />

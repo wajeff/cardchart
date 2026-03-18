@@ -17,7 +17,7 @@ function App() {
         <Route path="/amex_platinum" element={<CardPage card="amex_platinum" />} />
         <Route path="/amex_gold" element={<CardPage card="amex_gold" />} />
         <Route path="/td_first_class" element={<CardPage card="td_first_class" />} />
-        <Route path="/scotia_visa_infinte_privilege" element={<CardPage card="scotia_visa_infinite_privilege" />} />
+        <Route path="/scotia_visa_infinite_privilege" element={<CardPage card="scotia_visa_infinite_privilege" />} />
       </Routes>
     </Router>
   )
