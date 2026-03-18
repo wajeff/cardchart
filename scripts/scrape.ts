@@ -89,6 +89,23 @@ export async function scrapeCards() {
   console.log(cardFeeText)
   map.set('td_first_class', map.get("td_first_class") + cardFeeText)
 
+  //scotia_visa_infinte_privilege scrape
+  await page.goto(
+    "https://www.scotiabank.com/ca/en/personal/credit-cards/visa/passport-infinite-privilege-card.html",
+  );
+  promoText = await page
+    .locator(".contentContainer")
+    .locator("h2")
+    .textContent();
+  console.log(promoText);
+  map.set("scotia_visa_infinte_privilege", promoText);
+
+  cardFeeText = await page
+  .locator('.cmp.cmp-text:has-text("Annual fee")')
+  .textContent();
+  console.log(cardFeeText)
+  map.set('scotia_visa_infinte_privilege', map.get("scotia_visa_infinte_privilege") + cardFeeText)
+
   await browser.close();
 
   return map;
