@@ -20,7 +20,6 @@ Each key must map to an object with:
 - totalSpendRequired (integer)
 - promotionDurationMonths (integer)
 - totalMembershipFee (number)
-- dataGatheredAt: Return the current Unix timestamp in milliseconds (UTC), 13 digits.
 
 Please extract the following promotional information:
 - totalPoints: Total bonus points offered in the promotion
@@ -43,7 +42,6 @@ Each key must map to:
 - totalSpendRequired (integer)
 - promotionDurationMonths (integer)
 - totalMembershipFee (number)
-- dataGatheredAt (integer)
 
 Important retry rule:
 - Re-read the text carefully and avoid returning 0 unless the value is truly absent.
@@ -95,14 +93,12 @@ async function geminiParse(promotion, prompt) {
             totalSpendRequired: { type: "integer" },
             promotionDurationMonths: { type: "integer" },
             totalMembershipFee: { type: "number" },
-            dataGatheredAt: { type: "integer" },
           },
           required: [
             "totalPoints",
             "totalSpendRequired",
             "promotionDurationMonths",
             "totalMembershipFee",
-            "dataGatheredAt",
           ],
           additionalProperties: false,
         },

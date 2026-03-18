@@ -42,7 +42,7 @@ const getDayKey = (date) => (
 const buildDailyStepData = (historicalData) => {
   const rawPoints = historicalData
     .map((item) => {
-      const dateValue = toDate(item.dataGatheredAt)
+      const dateValue = toDate(item.recordDate)
       if (!dateValue) {
         return null
       }

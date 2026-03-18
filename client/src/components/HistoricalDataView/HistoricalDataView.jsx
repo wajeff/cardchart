@@ -6,7 +6,6 @@ const fieldLabels = {
   monthlySpendRequired: 'Monthly Spend Required',
   promotionDurationMonths: 'Promotion Duration (Months)',
   totalMembershipFee: 'Total Membership Fee',
-  dataGatheredAt: 'Data Gathered At',
   promotionText: 'Promotion Text',
   recordDate: 'Record Date'
 }
@@ -35,7 +34,7 @@ const formatInteger = (value) => {
 }
 
 const formatValue = (key, value) => {
-  if (key === 'dataGatheredAt') {
+  if (key === `\'recordDate\'`) {
     return toDate(value)?.toLocaleString() || 'Unknown date'
   }
 
@@ -56,8 +55,8 @@ const HistoricalDataView = ({ historicalData }) => {
   }
 
   const sortedHistoricalData = [...historicalData].sort((a, b) => {
-    const dateA = toDate(a.dataGatheredAt)
-    const dateB = toDate(b.dataGatheredAt)
+    const dateA = toDate(a.recordDate)
+    const dateB = toDate(b.recordDate)
 
     if (!dateA && !dateB) return 0
     if (!dateA) return 1
@@ -71,7 +70,7 @@ const HistoricalDataView = ({ historicalData }) => {
       {sortedHistoricalData.map((item, idx) => (
         <div key={idx} className={styles.recordCard}>
           <h4>
-            Record #{idx + 1} - {toDate(item.dataGatheredAt)?.toLocaleString() || 'Unknown date'}
+            Record #{idx + 1} - {toDate(item.recordDate)?.toLocaleString() || 'Unknown date'}
           </h4>
 
           <div className={styles.fieldGrid}>
