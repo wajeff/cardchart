@@ -1,6 +1,80 @@
-.cardPageBody{
+.cardPageBody {
   padding: 0 100px;
 }
+
+.headingBlock {
+  width: fit-content;
+  margin: 0 auto;
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.title {
+  font-size: 4em;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-bottom: 0;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 50px;
+}
+
+.subTitle {
+  font-size: 1.5em;
+  font-weight: 200;
+  line-height: 1.4;
+  margin: 0 auto;
+}
+
+.leftContainer {
+  width: 20%;
+  display: flex;
+ 
+}
+
+.cardImg {
+  width: 250px;
+  height: auto;
+  border-radius: 14px;
+  transform: rotateY(-8deg) rotateX(2deg) translateZ(0);
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.22),
+    0 4px 12px rgba(0, 0, 0, 0.14);
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+
+.cardImg:hover {
+  transform: rotateY(-3deg) rotateX(1deg) translateY(-4px);
+  box-shadow:
+    0 22px 40px rgba(0, 0, 0, 0.26),
+    0 8px 18px rgba(0, 0, 0, 0.16);
+}
+
+
+.pointsContainer {
+  display: flex;
+  gap: 100px;
+  margin: 0 500px;
+}
+
+.leftContainer {
+  flex: 0 0 260px;
+  perspective: 1200px;
+}
+
+.chartContainer {
+  flex: 1;
+  min-width: 0;
+}
+
+.chartCard {
+  width: 100%;
+}
+
+.chartCardContent {
+  padding: 16px;
+}
+
 .toggleContainer {
   margin-bottom: 20px;
 }

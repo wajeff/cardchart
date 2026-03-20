@@ -5,8 +5,17 @@ import ChartView from "../ChartView/ChartView";
 import HistoricalDataView from "../HistoricalDataView/HistoricalDataView";
 import cardAssets from "../../cardAssets";
 
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
 function cleanCardName(input) {
-  
   let string = String(input)
     .toLowerCase()
     .replace(/[^a-z0-9]/g, " ");
@@ -16,8 +25,6 @@ function cleanCardName(input) {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 }
-
-
 
 const toDate = (value) => {
   if (value === null || value === undefined) {
@@ -47,7 +54,7 @@ const getNewYorkDateString = () =>
   new Date().toLocaleDateString("en-US", { timeZone: "America/New_York" });
 
 const CardPage = ({ card }) => {
-  const cardImg = cardAssets[card]
+  const cardImg = cardAssets[card];
   const [historicalData, setHistoricalData] = useState([]);
   const [latestDataText, setLatestDataText] = useState(
     `Latest data from ${getNewYorkDateString()}`,
@@ -105,13 +112,50 @@ const CardPage = ({ card }) => {
 
   return (
     <div className={styles.cardPageBody}>
-      <h2>{cleanCardName(card)} - Points History</h2>
-      <img src={cardImg?.src}></img>
-      <p>{latestDataText}</p>
-      <p>{lastPromotionChangeText}</p>
+      <div className={styles.headingBlock}>
+        <h2 className={styles.title}>{cleanCardName(card)}</h2>
+        <h2 className={styles.subTitle}>Points History</h2>
+      </div>
+
+      <section className={styles.pointsContainer}>
+        <div className={styles.leftContainer}>
+          <Card className='w-[400px] block pl-[10px]'>
+            <CardHeader>
+              <img className={styles.cardImg} src={cardImg?.src} />
+              <CardTitle className="text-[1em] font-medium m-0 mx-auto">
+                Point Values
+              </CardTitle>
+            
+            </CardHeader>
+
+            <CardContent>
+              {/*Add minimum value */}
+              
+            </CardContent>
+            
+          </Card>
+        </div>
+
+        <div className={styles.chartContainer}>
+          {viewMode === "chart" && (
+            <Card className={styles.chartCard}>
+              <CardContent className={styles.chartCardContent}>
+                <ChartView historicalData={historicalData} />
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* {viewMode === "data" && (
+          <HistoricalDataView historicalData={historicalData} />
+        )} */}
+      </section>
+
+      {/* <p>{latestDataText}</p>
+      <p>{lastPromotionChangeText}</p> */}
 
       {/* View Toggle Buttons */}
-      <div className={styles.toggleContainer}>
+      {/* <div className={styles.toggleContainer}>
         <button
           onClick={() => setViewMode("chart")}
           className={
@@ -132,12 +176,7 @@ const CardPage = ({ card }) => {
         >
           All Data View
         </button>
-      </div>
-
-      {viewMode === "chart" && <ChartView historicalData={historicalData} />}
-      {viewMode === "data" && (
-        <HistoricalDataView historicalData={historicalData} />
-      )}
+      </div> */}
     </div>
   );
 };

@@ -123,7 +123,7 @@ const ChartView = ({ historicalData }) => {
         datasets: [{
           label: 'Total Points',
           data: chartData,
-          borderColor: 'rgb(75, 192, 192)',
+          borderColor: 'rgb(0, 0, 0)',
           pointRadius: 3,
           pointHoverRadius: 5,
           tension: 0
@@ -131,6 +131,12 @@ const ChartView = ({ historicalData }) => {
       },
       options: {
         responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+    legend: {
+      display: false
+    }
+  },
         scales: {
           x: {
             type: 'time',

@@ -9,6 +9,11 @@
   list-style: none;
   padding-right: 40px;
 }
+
+.navItem a {
+  font-weight: 300;
+}
+
 .searchIcon{
   width: 21.5px;
   height: auto;
