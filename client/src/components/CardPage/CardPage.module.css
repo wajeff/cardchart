@@ -1,9 +1,11 @@
 .cardPageBody {
-  padding: 0 100px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
 }
 
 .headingBlock {
-  width: fit-content;
+  width: 100%;
   margin: 0 auto;
   text-align: center;
   margin-bottom: 28px;
@@ -26,15 +28,11 @@
   margin: 0 auto;
 }
 
-.leftContainer {
-  width: 20%;
-  display: flex;
- 
-}
-
 .cardImg {
   width: 250px;
   height: auto;
+  display: block;
+  margin: 0 auto;
   border-radius: 14px;
   transform: rotateY(-8deg) rotateX(2deg) translateZ(0);
   box-shadow:
@@ -52,19 +50,21 @@
 
 
 .pointsContainer {
-  display: flex;
-  gap: 100px;
-  margin: 0 500px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  gap: 28px;
+  align-items: flex-start;
 }
 
 .leftContainer {
-  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   perspective: 1200px;
 }
 
 .chartContainer {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
 }
 
 .chartCard {
@@ -73,6 +73,12 @@
 
 .chartCardContent {
   padding: 16px;
+}
+
+@media (max-width: 1024px) {
+  .pointsContainer {
+    grid-template-columns: 1fr;
+  }
 }
 
 .toggleContainer {

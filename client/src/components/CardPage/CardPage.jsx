@@ -119,7 +119,7 @@ const CardPage = ({ card }) => {
 
       <section className={styles.pointsContainer}>
         <div className={styles.leftContainer}>
-          <Card className='w-[400px] block'>
+          <Card className="w-full">
             <CardHeader>
               <img className={styles.cardImg} src={cardImg?.src} />
               <CardTitle className="text-[1em] font-medium m-0 mx-auto">
@@ -133,6 +133,17 @@ const CardPage = ({ card }) => {
               
             </CardContent>
             
+          </Card>
+
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle className="text-[1em] font-medium m-0 mx-auto">
+                Notes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Add secondary card content here */}
+            </CardContent>
           </Card>
         </div>
 
