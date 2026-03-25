@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Chart } from 'chart.js/auto'
 import 'chartjs-adapter-date-fns'
 import styles from './ChartView.module.css'
@@ -89,21 +89,51 @@ const buildDailyStepData = (historicalData) => {
 }
 
 const ChartView = ({ historicalData }) => {
+  const containerRef = useRef(null)
   const canvasRef = useRef(null)
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) {
+      return
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      if (!entry) {
+        return
+      }
+
+      const { width, height } = entry.contentRect
+      setContainerSize({
+        width: Math.round(width),
+        height: Math.round(height)
+      })
+    })
+
+    observer.observe(container)
+
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     if (!historicalData || historicalData.length === 0) {
-      return;
+      return
     }
 
     const canvas = canvasRef.current
     if (!canvas) {
-      return;
+      return
     }
 
     const ctx = canvas.getContext('2d')
     if (!ctx) {
-      return;
+      return
+    }
+
+    if (containerSize.width === 0 || containerSize.height === 0) {
+      return
     }
 
     const existingChart = Chart.getChart(canvas)
@@ -131,12 +161,12 @@ const ChartView = ({ historicalData }) => {
       },
       options: {
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         plugins: {
-    legend: {
-      display: false
-    }
-  },
+          legend: {
+            display: false
+          }
+        },
         scales: {
           x: {
             type: 'time',
@@ -164,9 +194,13 @@ const ChartView = ({ historicalData }) => {
     return () => {
       chart.destroy()
     }
-  }, [historicalData])
+  }, [historicalData, containerSize.width, containerSize.height])
 
-  return <canvas ref={canvasRef} className={styles.chartCanvas}></canvas>
+  return (
+    <div ref={containerRef} className={styles.chartWrapper}>
+      <canvas ref={canvasRef} className={styles.chartCanvas}></canvas>
+    </div>
+  )
 }
 
 export default ChartView
