@@ -19,14 +19,6 @@ const cardAssets = {
     src: "/td_first_class.png",
     alt: "TD First Class card",
   },
-  search_solid: {
-    src: "/search-solid.svg",
-    alt: "Search icon",
-  },
-  vite: {
-    src: "/vite.svg",
-    alt: "Vite logo",
-  },
 };
 
 export default cardAssets;
