@@ -1,7 +1,5 @@
 .cardPageBody {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 100px 0 100px;
 }
 
 .headingBlock {
