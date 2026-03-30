@@ -4,6 +4,7 @@ import styles from "./CardPage.module.css";
 import ChartView from "../ChartView/ChartView";
 import HistoricalDataView from "../HistoricalDataView/HistoricalDataView";
 import cardAssets from "../../cardAssets";
+import cardValues from "../../cardValues";
 
 import {
   Card,
@@ -61,6 +62,11 @@ const CardPage = ({ card }) => {
   );
   const [lastPromotionChangeText, setLastPromotionChangeText] = useState("");
   const [viewMode, setViewMode] = useState("chart");
+  const [minimumExpectedValue, setMinimumExpectedValue] = useState(
+    cardValues[card]?.value,
+  );
+  const [inputValue, setInputValue] = useState(0);
+  console.log(minimumExpectedValue);
 
   // Fetch historical data from MongoDB
   useEffect(() => {
@@ -122,28 +128,39 @@ const CardPage = ({ card }) => {
           <Card className="w-full">
             <CardHeader>
               <img className={styles.cardImg} src={cardImg?.src} />
-              <CardTitle className="text-[1em] font-medium m-0 mx-auto">
-                Point Values
-              </CardTitle>
-            
             </CardHeader>
 
-            <CardContent>
-              {/*Add minimum value */}
-              
-            </CardContent>
-            
+            <CardContent>{/*Add minimum value */}</CardContent>
           </Card>
 
           <Card className="w-full">
             <CardHeader>
               <CardTitle className="text-[1em] font-medium m-0 mx-auto">
-                Notes
+                Minimum Promotion Value
+                <br></br>
               </CardTitle>
+              <CardContent>
+                <input
+                  className="border border-grey rounded-md"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={inputValue}
+                  onChange={(e) =>
+                    setInputValue(e.target.value.replace(/[^0-9]/g, ""))
+                  }
+                  onPaste={(e) => {
+                    e.preventDefault();
+                    const pasted = e.clipboardData
+                      .getData("text")
+                      .replace(/[^0-9]/g, "");
+                    setInputValue((prev) => prev + pasted);
+                  }}
+                ></input>
+                <p>{minimumExpectedValue}</p>
+              </CardContent>
             </CardHeader>
-            <CardContent>
-              {/* Add secondary card content here */}
-            </CardContent>
+            <CardContent>{/* Add secondary card content here */}</CardContent>
           </Card>
         </div>
 
