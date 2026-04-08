@@ -28,7 +28,7 @@ const Navbar = () => {
             <Link href="/">Home</Link>
           </li>
           <li className={styles.navItem}>
-            <Link href="/points">Points</Link>
+            <Link href="/Points">Points</Link>
           </li>
           <li>
             <img
@@ -70,7 +70,7 @@ const Navbar = () => {
           </Link>
         </li>
         <li className={styles.drawerItem}>
-          <Link href="/points" onClick={closeMenu}>
+          <Link href="/Points" onClick={closeMenu}>
             Points
           </Link>
         </li>

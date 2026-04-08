@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import CardPage from "@/components/CardPage/CardPage";
 import cardAssets from "@/cardAssets";
 
+export const dynamicParams = false;
+
 type CardRouteProps = {
   params: Promise<{
     card: string;
