@@ -1,6 +1,6 @@
-import styles from "../../app/page.module.css";
-import { Link } from "react-router-dom";
-import cardAssets from "../../cardAssets";
+import Link from "next/link";
+import styles from "./page.module.css";
+import cardAssets from "@/cardAssets";
 
 const Home = () => {
   return (
@@ -15,7 +15,7 @@ const Home = () => {
         
         <section className={styles.cardsOrbitSystem}>
           <div className={`${styles.orbit} ${styles.orbitOne}`}>
-            <Link to="/amex_cobalt" aria-label="Amex Cobalt" className={styles.orbitCard}>
+            <Link href="/amex_cobalt" aria-label="Amex Cobalt" className={styles.orbitCard}>
               <img
                 src={cardAssets['amex_cobalt']?.src}
                 alt="Amex Cobalt"
@@ -25,7 +25,7 @@ const Home = () => {
           </div>
 
           <div className={`${styles.orbit} ${styles.orbitTwo}`}>
-            <Link to="/amex_platinum" aria-label="Amex Platinum" className={styles.orbitCard}>
+            <Link href="/amex_platinum" aria-label="Amex Platinum" className={styles.orbitCard}>
               <img
                 src={cardAssets['amex_platinum']?.src}
                 alt="Amex Platinum"
@@ -35,7 +35,7 @@ const Home = () => {
           </div>
 
           <div className={`${styles.orbit} ${styles.orbitThree}`}>
-            <Link to="/amex_gold" aria-label="Amex Gold" className={styles.orbitCard}>
+            <Link href="/amex_gold" aria-label="Amex Gold" className={styles.orbitCard}>
               <img
                 src={cardAssets['amex_gold']?.src}
                 alt="Amex Gold"
@@ -45,7 +45,7 @@ const Home = () => {
           </div>
 
           <div className={`${styles.orbit} ${styles.orbitFour}`}>
-            <Link to="/td_first_class" aria-label="TD First Class" className={styles.orbitCard}>
+            <Link href="/td_first_class" aria-label="TD First Class" className={styles.orbitCard}>
               <img
                 src={cardAssets['td_first_class']?.src}
                 alt="TD First Class"
@@ -54,7 +54,7 @@ const Home = () => {
             </Link>
           </div>
           <div className={`${styles.orbit} ${styles.orbitFive}`}>
-            <Link to="/scotia_visa_infinite_privilege" aria-label="Scotiabank Visa Infinite" className={styles.orbitCard}>
+            <Link href="/scotia_visa_infinite_privilege" aria-label="Scotiabank Visa Infinite" className={styles.orbitCard}>
               <img
                 src={cardAssets['scotia_visa_infinite_privilege']?.src}
                 alt="Scotiabank Visa Infinite"

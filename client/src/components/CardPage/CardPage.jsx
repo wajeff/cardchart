@@ -1,3 +1,5 @@
+"use client";
+
 import axios from "axios";
 import { useState, useEffect } from "react";
 import styles from "./CardPage.module.css";
@@ -15,6 +17,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
 
 function cleanCardName(input) {
   let string = String(input)
@@ -77,7 +82,9 @@ const CardPage = ({ card }) => {
         setLatestDataText(`Latest data from ${getNewYorkDateString()}`);
 
         // Fetch all records for this card from MongoDB
-        const response = await axios.get(`/api/data?card=${card}`);
+        const response = await axios.get(`${API_BASE_URL}/api/data`, {
+          params: { card },
+        });
         const records = response.data;
 
         console.log("Fetched MongoDB records:", records);
