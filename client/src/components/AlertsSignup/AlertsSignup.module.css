@@ -1,0 +1,88 @@
+.signupCard {
+  width: min(100%, 760px);
+  margin: 32px auto 0;
+  padding: 24px;
+  border: 1px solid #d6d6dc;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 15, 18, 0.06);
+}
+
+.fullWidth {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.copyBlock {
+  margin-bottom: 16px;
+}
+
+.title {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+  font-weight: 500;
+}
+
+.description {
+  margin: 0;
+  color: #6b7280;
+}
+
+.form {
+  display: flex;
+  gap: 12px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font: inherit;
+}
+
+.button {
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  background: #111111;
+  color: #ffffff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.successMessage,
+.errorMessage {
+  margin: 12px 0 0;
+  font-size: 0.95rem;
+}
+
+.successMessage {
+  color: #0f766e;
+}
+
+.errorMessage {
+  color: #b91c1c;
+}
+
+@media (max-width: 760px) {
+  .signupCard {
+    margin-top: 24px;
+    padding: 20px 16px;
+  }
+
+  .fullWidth {
+    margin-top: 0;
+  }
+
+  .form {
+    flex-direction: column;
+  }
+}

@@ -37,7 +37,8 @@
 }
 
 .cardImg {
-  width: 250px;
+  width: 100%;
+  max-width: 100%;
   height: auto;
   display: block;
   margin: 0 auto;
@@ -80,6 +81,19 @@
 .chartContainer {
   width: 100%;
   min-width: 0;
+}
+
+.alertsContainer {
+  grid-column: 2;
+  width: 100%;
+  min-width: 0;
+  margin-top: 0;
+}
+
+.alertsSignupCard {
+  width: 100%;
+  max-width: none;
+  margin: 0;
 }
 
 .chartCard {
@@ -190,6 +204,11 @@
     justify-content: flex-start;
     gap: 16px;
   }
+
+  .alertsContainer {
+    grid-column: auto;
+  }
+
 }
 
 @media (max-width: 768px) {
@@ -212,10 +231,6 @@
   .pointsContainer {
     gap: 20px;
     width: calc(100vw - 40px);
-  }
-
-  .cardImg {
-    width: min(100%, 220px);
   }
 
   .chartCardContent {
@@ -245,10 +260,6 @@
 
   .leftContainer {
     gap: 12px;
-  }
-
-  .cardImg {
-    width: min(100%, 200px);
   }
 
   .chartCardContent {

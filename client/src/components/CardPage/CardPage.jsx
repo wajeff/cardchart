@@ -4,6 +4,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import styles from "./CardPage.module.css";
 import ChartView from "../ChartView/ChartView";
+import AlertsSignup from "../AlertsSignup/AlertsSignup";
 import cardAssets from "../../cardAssets";
 import cardValues from "../../cardValues";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -249,6 +250,10 @@ const CardPage = ({ card }) => {
               </CardContent>
             </Card>
           )}
+        </div>
+
+        <div className={styles.alertsContainer}>
+          <AlertsSignup fullWidth className={styles.alertsSignupCard} />
         </div>
 
         {/* {viewMode === "data" && (

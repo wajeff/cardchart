@@ -3,6 +3,8 @@
 import { GoogleGenAI } from "@google/genai";
 import mongoose from "mongoose";
 import { scrapeCards } from "../scripts/scrape.ts";
+import { sendPromotionAlertEmails } from "./_lib/alerts.js";
+import { connectDB } from "./_lib/db.js";
 
 // MongoDB Schema
 const DataSchema = new mongoose.Schema({
@@ -10,8 +12,6 @@ const DataSchema = new mongoose.Schema({
   date: Number,
   data: Array,
 });
-
-let isConnected = false;
 
 const EXTRACTION_PROMPT = `
 Return ONLY a JSON object where each key is the same card key from Input JSON.
@@ -57,15 +57,6 @@ Please extract:
 Extract accurate values from the text. Only use 0 when a field is genuinely not present.
 `.trim();
 
-// Connect to MongoDB
-async function connectDB() {
-  if (isConnected) {
-    return;
-  }
-
-  await mongoose.connect(process.env.MONGO_URI);
-  isConnected = true;
-}
 const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY;
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
@@ -147,6 +138,8 @@ export default async function handler(req, res) {
 
   }
 
+  const promotionChanges = [];
+
   for (const [key, value] of parsedMap) {
     const newData = value;
     const CardModel = mongoose.models[key] || mongoose.model(key, DataSchema, key);
@@ -168,8 +161,18 @@ export default async function handler(req, res) {
         data: [newData],
       });
       await doc.save();
+      promotionChanges.push({
+        card: key,
+        ...newData,
+      });
     }
   }
 
-  return res.status(200).json({ ok: true });
+  const alertEmailResult = await sendPromotionAlertEmails(promotionChanges);
+
+  return res.status(200).json({
+    ok: true,
+    changesDetected: promotionChanges.length,
+    alertEmailResult,
+  });
 }
