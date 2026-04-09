@@ -233,20 +233,17 @@ const CardPage = ({ card }) => {
           {viewMode === "chart" && (
             <Card className={styles.chartCard}>
               <CardContent className={styles.chartCardContent}>
-                {isLoadingChart ? (
-                  <div className={styles.chartLoadingState}>
-                    <Skeleton className={styles.chartLoadingTopBar} />
-                    <Skeleton className={styles.chartLoadingCanvas} />
-                    <div className={styles.chartLoadingAxisRow}>
-                      <Skeleton className={styles.chartLoadingAxisLabel} />
-                      <Skeleton className={styles.chartLoadingAxisLabel} />
+                <div className={styles.chartSurface}>
+                  {isLoadingChart ? (
+                    <div className={styles.chartLoadingState}>
+                      <Skeleton className={styles.chartLoadingCanvas} />
                     </div>
-                  </div>
-                ) : historicalData.length > 0 ? (
-                  <ChartView historicalData={historicalData} />
-                ) : (
-                  <div className={styles.chartEmptyState}>No chart data available.</div>
-                )}
+                  ) : historicalData.length > 0 ? (
+                    <ChartView historicalData={historicalData} />
+                  ) : (
+                    <div className={styles.chartEmptyState}>No chart data available.</div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           )}

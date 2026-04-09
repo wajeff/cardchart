@@ -1,21 +1,9 @@
 .chartWrapper {
   width: 100%;
-  height: clamp(260px, 50vh, 420px);
+  height: var(--chart-height, clamp(260px, 50vh, 420px));
 }
 
 .chartCanvas {
   width: 100%;
   height: 100%;
-}
-
-@media (max-width: 768px) {
-  .chartWrapper {
-    height: 320px;
-  }
-}
-
-@media (max-width: 480px) {
-  .chartWrapper {
-    height: 260px;
-  }
 }

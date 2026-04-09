@@ -79,6 +79,7 @@
 }
 
 .chartContainer {
+  --chart-height: clamp(260px, 50vh, 420px);
   width: 100%;
   min-width: 0;
 }
@@ -103,6 +104,10 @@
 
 .chartCardContent {
   padding: 16px;
+}
+
+.chartSurface {
+  height: var(--chart-height);
 }
 
 .minimumValueCard {
@@ -155,34 +160,16 @@
 }
 
 .chartLoadingState {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.chartLoadingTopBar {
-  height: 18px;
-  width: 140px;
+  height: 100%;
 }
 
 .chartLoadingCanvas {
   width: 100%;
-  height: clamp(260px, 50vh, 420px);
-}
-
-.chartLoadingAxisRow {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.chartLoadingAxisLabel {
-  height: 14px;
-  width: 72px;
+  height: 100%;
 }
 
 .chartEmptyState {
-  min-height: clamp(260px, 50vh, 420px);
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,14 +220,12 @@
     width: calc(100vw - 40px);
   }
 
-  .chartCardContent {
-    padding: 12px;
+  .chartContainer {
+    --chart-height: 320px;
   }
 
-  .chartLoadingCanvas,
-  .chartEmptyState {
-    height: 320px;
-    min-height: 320px;
+  .chartCardContent {
+    padding: 12px;
   }
 }
 
@@ -258,6 +243,10 @@
     gap: 16px;
   }
 
+  .chartContainer {
+    --chart-height: 260px;
+  }
+
   .leftContainer {
     gap: 12px;
   }
@@ -266,11 +255,6 @@
     padding: 10px;
   }
 
-  .chartLoadingCanvas,
-  .chartEmptyState {
-    height: 260px;
-    min-height: 260px;
-  }
 }
 
 .toggleContainer {
