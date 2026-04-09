@@ -1,5 +1,8 @@
 .cardPageBody {
-  padding: 0 100px 0 100px;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 6vw, 100px) 40px;
 }
 
 .headingBlock {
@@ -10,20 +13,28 @@
 }
 
 .title {
-  font-size: 4em;
+  font-size: clamp(2.4rem, 6vw, 4rem);
   font-weight: 500;
   line-height: 1.2;
   margin-bottom: 0;
   margin-left: auto;
   margin-right: auto;
-  margin-top: 50px;
+  margin-top: clamp(28px, 5vw, 50px);
 }
 
 .subTitle {
-  font-size: 1.5em;
+  font-size: clamp(1.05rem, 2.6vw, 1.5rem);
   font-weight: 200;
   line-height: 1.4;
   margin: 0 auto;
+}
+
+.cardImagePanel {
+  width: 100%;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .cardImg {
@@ -49,33 +60,209 @@
 
 .pointsContainer {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  grid-template-columns: minmax(260px, 1fr) minmax(0, 3fr);
   gap: 28px;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 .leftContainer {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  justify-content: space-between;
   perspective: 1200px;
+  min-width: 0;
+  height: 100%;
 }
 
 .chartContainer {
   width: 100%;
+  min-width: 0;
 }
 
 .chartCard {
   width: 100%;
+  overflow: hidden;
 }
 
 .chartCardContent {
   padding: 16px;
 }
 
+.minimumValueCard {
+  text-align: center;
+}
+
+.minimumValueHeader {
+  justify-items: center;
+}
+
+.minimumValueBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.minimumValueInput {
+  width: 100%;
+  max-width: 140px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.minimumValueAmount {
+  margin: 0;
+  text-align: center;
+}
+
+.currentPointsValueBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.currentPointsValueLabel {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.currentPointsValueAmount {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.chartLoadingState {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.chartLoadingTopBar {
+  height: 18px;
+  width: 140px;
+}
+
+.chartLoadingCanvas {
+  width: 100%;
+  height: clamp(260px, 50vh, 420px);
+}
+
+.chartLoadingAxisRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chartLoadingAxisLabel {
+  height: 14px;
+  width: 72px;
+}
+
+.chartEmptyState {
+  min-height: clamp(260px, 50vh, 420px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #6b7280;
+}
+
 @media (max-width: 1024px) {
+  .cardPageBody {
+    padding-inline: clamp(16px, 4vw, 32px);
+  }
+
   .pointsContainer {
     grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .leftContainer {
+    max-width: 520px;
+    width: 100%;
+    margin: 0 auto;
+    height: auto;
+    justify-content: flex-start;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cardPageBody {
+    padding: 0 16px 28px;
+  }
+
+  .headingBlock {
+    margin-bottom: 20px;
+  }
+
+  .title {
+    line-height: 1.08;
+  }
+
+  .subTitle {
+    line-height: 1.25;
+  }
+
+  .pointsContainer {
+    gap: 20px;
+  }
+
+  .cardImg {
+    width: min(100%, 220px);
+  }
+
+  .chartCardContent {
+    padding: 12px;
+  }
+
+  .chartLoadingCanvas,
+  .chartEmptyState {
+    height: 320px;
+    min-height: 320px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cardPageBody {
+    padding: 0 12px 24px;
+  }
+
+  .title {
+    font-size: clamp(2rem, 11vw, 2.6rem);
+    margin-top: 24px;
+  }
+
+  .subTitle {
+    font-size: 1rem;
+  }
+
+  .pointsContainer {
+    gap: 16px;
+  }
+
+  .leftContainer {
+    gap: 12px;
+  }
+
+  .cardImg {
+    width: min(100%, 200px);
+  }
+
+  .chartCardContent {
+    padding: 10px;
+  }
+
+  .chartLoadingCanvas,
+  .chartEmptyState {
+    height: 260px;
+    min-height: 260px;
   }
 }
 

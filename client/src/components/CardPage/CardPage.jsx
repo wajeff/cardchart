@@ -4,22 +4,34 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import styles from "./CardPage.module.css";
 import ChartView from "../ChartView/ChartView";
-import HistoricalDataView from "../HistoricalDataView/HistoricalDataView";
 import cardAssets from "../../cardAssets";
 import cardValues from "../../cardValues";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+const getApiBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL;
+  }
+
+  if (typeof window === "undefined") {
+    return process.env.NODE_ENV === "development" ? "http://localhost:3001" : "";
+  }
+
+  const { protocol, hostname } = window.location;
+
+  if (process.env.NODE_ENV === "development") {
+    return `${protocol}//${hostname}:3001`;
+  }
+
+  return "";
+};
 
 function cleanCardName(input) {
   let string = String(input)
@@ -59,30 +71,67 @@ const toDate = (value) => {
 const getNewYorkDateString = () =>
   new Date().toLocaleDateString("en-US", { timeZone: "America/New_York" });
 
+const sanitizePointValueInput = (value) => {
+  const cleaned = value.replace(/[^0-9.]/g, "");
+  const [whole = "", ...rest] = cleaned.split(".");
+  const decimal = rest.join("").slice(0, 2);
+
+  if (rest.length === 0) {
+    return cleaned;
+  }
+
+  return `${whole}.${decimal}`;
+};
+
+const parseNumericValue = (value) => {
+  const parsed = Number.parseFloat(String(value).replace(/,/g, ""));
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const formatCurrency = (value) =>
+  new Intl.NumberFormat("en-CA", {
+    style: "currency",
+    currency: "CAD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+
 const CardPage = ({ card }) => {
   const cardImg = cardAssets[card];
   const [historicalData, setHistoricalData] = useState([]);
+  const [isLoadingChart, setIsLoadingChart] = useState(true);
   const [latestDataText, setLatestDataText] = useState(
     `Latest data from ${getNewYorkDateString()}`,
   );
   const [lastPromotionChangeText, setLastPromotionChangeText] = useState("");
   const [viewMode, setViewMode] = useState("chart");
-  const [minimumExpectedValue, setMinimumExpectedValue] = useState(
-    cardValues[card]?.value,
+  const [inputValue, setInputValue] = useState(
+    String(cardValues[card]?.value ?? ""),
   );
-  const [inputValue, setInputValue] = useState(0);
-  console.log(minimumExpectedValue);
+
+  const minimumPointValue = parseNumericValue(inputValue);
+  const latestPointAmount =
+    historicalData.length > 0
+      ? parseNumericValue(historicalData[historicalData.length - 1]?.totalPoints)
+      : null;
+  const currentPointsValue =
+    latestPointAmount !== null ? (latestPointAmount * minimumPointValue) / 100 : null;
+
+  useEffect(() => {
+    setInputValue(String(cardValues[card]?.value ?? ""));
+  }, [card]);
 
   // Fetch historical data from MongoDB
   useEffect(() => {
     if (!card) return;
 
     const fetchData = async () => {
+      setIsLoadingChart(true);
       try {
         setLatestDataText(`Latest data from ${getNewYorkDateString()}`);
 
         // Fetch all records for this card from MongoDB
-        const response = await axios.get(`${API_BASE_URL}/api/data`, {
+        const response = await axios.get(`${getApiBaseUrl()}/api/data`, {
           params: { card },
         });
         const records = response.data;
@@ -90,6 +139,7 @@ const CardPage = ({ card }) => {
         console.log("Fetched MongoDB records:", records);
 
         if (records.length === 0) {
+          setHistoricalData([]);
           setLastPromotionChangeText(
             "Last promotion change unavailable (no data yet).",
           );
@@ -116,7 +166,10 @@ const CardPage = ({ card }) => {
         setHistoricalData(allDataPoints);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setHistoricalData([]);
         setLastPromotionChangeText("Error fetching data");
+      } finally {
+        setIsLoadingChart(false);
       }
     };
 
@@ -132,39 +185,43 @@ const CardPage = ({ card }) => {
 
       <section className={styles.pointsContainer}>
         <div className={styles.leftContainer}>
-          <Card className="w-full">
-            <CardHeader>
-              <img className={styles.cardImg} src={cardImg?.src} />
-            </CardHeader>
+          <div className={styles.cardImagePanel}>
+            <img className={styles.cardImg} src={cardImg?.src} />
+          </div>
 
-            <CardContent>{/*Add minimum value */}</CardContent>
-          </Card>
-
-          <Card className="w-full">
-            <CardHeader>
+          <Card className={`w-full ${styles.minimumValueCard}`}>
+            <CardHeader className={styles.minimumValueHeader}>
               <CardTitle className="text-[1em] font-medium m-0 mx-auto">
                 Minimum Promotion Value
                 <br></br>
               </CardTitle>
-              <CardContent>
+              <CardContent className={styles.minimumValueBody}>
                 <input
-                  className="border border-grey rounded-md"
+                  className={styles.minimumValueInput}
                   type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
+                  inputMode="decimal"
+                  pattern="[0-9]*[.]?[0-9]*"
                   value={inputValue}
-                  onChange={(e) =>
-                    setInputValue(e.target.value.replace(/[^0-9]/g, ""))
-                  }
+                  onChange={(e) => setInputValue(sanitizePointValueInput(e.target.value))}
                   onPaste={(e) => {
                     e.preventDefault();
-                    const pasted = e.clipboardData
-                      .getData("text")
-                      .replace(/[^0-9]/g, "");
-                    setInputValue((prev) => prev + pasted);
+                    const pasted = sanitizePointValueInput(
+                      e.clipboardData.getData("text"),
+                    );
+                    setInputValue(pasted);
                   }}
                 ></input>
-                <p>{minimumExpectedValue}</p>
+                <p className={styles.minimumValueAmount}>
+                  {minimumPointValue} cents per point
+                </p>
+                <div className={styles.currentPointsValueBlock}>
+                  <p className={styles.currentPointsValueLabel}>Current Points Value</p>
+                  <p className={styles.currentPointsValueAmount}>
+                    {currentPointsValue !== null
+                      ? formatCurrency(currentPointsValue)
+                      : "Unavailable"}
+                  </p>
+                </div>
               </CardContent>
             </CardHeader>
             <CardContent>{/* Add secondary card content here */}</CardContent>
@@ -175,7 +232,20 @@ const CardPage = ({ card }) => {
           {viewMode === "chart" && (
             <Card className={styles.chartCard}>
               <CardContent className={styles.chartCardContent}>
-                <ChartView historicalData={historicalData} />
+                {isLoadingChart ? (
+                  <div className={styles.chartLoadingState}>
+                    <Skeleton className={styles.chartLoadingTopBar} />
+                    <Skeleton className={styles.chartLoadingCanvas} />
+                    <div className={styles.chartLoadingAxisRow}>
+                      <Skeleton className={styles.chartLoadingAxisLabel} />
+                      <Skeleton className={styles.chartLoadingAxisLabel} />
+                    </div>
+                  </div>
+                ) : historicalData.length > 0 ? (
+                  <ChartView historicalData={historicalData} />
+                ) : (
+                  <div className={styles.chartEmptyState}>No chart data available.</div>
+                )}
               </CardContent>
             </Card>
           )}
