@@ -4,14 +4,26 @@
   z-index: 80;
   background: #ffffff;
   border-bottom: 1px solid #ececf0;
+  overflow: visible;
 }
 
 .navShell {
+  position: relative;
   margin: 0 auto;
   padding: 8px 100px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-height: 40px;
+}
+
+.navActions {
+  --desktop-search-width: min(300px, 30vw);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
 }
 
 .navList {
@@ -35,6 +47,124 @@
 .searchIcon {
   width: 21.5px;
   height: auto;
+}
+
+.searchButton {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+.desktopSearchSlot {
+  position: absolute;
+  top: 50%;
+  right: 32px;
+  width: var(--desktop-search-width);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-50%) scaleX(0.96);
+  transform-origin: right center;
+  transition: opacity 140ms ease, transform 180ms ease;
+}
+
+.desktopSearchSlotOpen {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(-50%) scaleX(1);
+}
+
+.searchTray {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 32px;
+  width: var(--desktop-search-width);
+  z-index: 90;
+}
+
+.searchTrayInner {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ececf0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.1);
+}
+
+.mobileSearchPanel {
+  width: 100%;
+  padding: 12px 0 0;
+}
+
+.searchForm {
+  margin: 0;
+}
+
+.searchInput {
+  width: 100%;
+  border: 1px solid #d9d9e0;
+  border-radius: 999px;
+  padding: 2px 12px;
+  min-height: 24px;
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.1;
+  background: #ffffff;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #111111;
+}
+
+.searchResults {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.searchResultLink {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 160ms ease;
+}
+
+.searchResultLink:hover {
+  background: #f6f6f8;
+}
+
+.searchResultImage {
+  width: 52px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.searchResultLabel {
+  font-size: 0.98rem;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.searchEmptyState {
+  padding: 12px 2px 4px;
+  color: #72727d;
 }
 
 .menuButton {
@@ -137,6 +267,14 @@
   }
 
   .navList {
+    display: none;
+  }
+
+  .navActions {
+    display: none;
+  }
+
+  .searchTray {
     display: none;
   }
 
