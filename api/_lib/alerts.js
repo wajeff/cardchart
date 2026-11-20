@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-import { getAlertSubscriberModel } from "./db.js";
+import { getActiveSubscriberEmails } from "./db.js";
 
 function formatCardName(cardKey) {
   return String(cardKey)
@@ -101,9 +101,7 @@ export async function sendPromotionAlertEmails(changes) {
     return { sent: false, reason: "missing_email_config" };
   }
 
-  const AlertSubscriber = getAlertSubscriberModel();
-  const subscribers = await AlertSubscriber.find({ isActive: true }).lean();
-  const recipients = subscribers.map((subscriber) => subscriber.email).filter(Boolean);
+  const recipients = (await getActiveSubscriberEmails()).filter(Boolean);
 
   if (!recipients.length) {
     return { sent: false, reason: "no_subscribers" };
