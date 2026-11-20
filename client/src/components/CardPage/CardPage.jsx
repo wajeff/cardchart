@@ -122,7 +122,7 @@ const CardPage = ({ card }) => {
     setInputValue(String(cardValues[card]?.value ?? ""));
   }, [card]);
 
-  // Fetch historical data from MongoDB
+  // Fetch historical data from the API
   useEffect(() => {
     if (!card) return;
 
@@ -131,13 +131,13 @@ const CardPage = ({ card }) => {
       try {
         setLatestDataText(`Latest data from ${getNewYorkDateString()}`);
 
-        // Fetch all records for this card from MongoDB
+        // Fetch all records for this card
         const response = await axios.get(`${getApiBaseUrl()}/api/data`, {
           params: { card },
         });
         const records = response.data;
 
-        console.log("Fetched MongoDB records:", records);
+        console.log("Fetched records:", records);
 
         if (records.length === 0) {
           setHistoricalData([]);

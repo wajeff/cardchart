@@ -10,13 +10,14 @@
     "@google/genai": "^1.41.0",
     "axios": "^1.9.0",
     "dotenv": "^16.5.0",
-    "mongoose": "^8.15.1",
-    "nodemailer": "^7.0.5"
+    "nodemailer": "^7.0.5",
+    "@neondatabase/serverless": "^1.0.0"
   },
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon server/index.js",
     "client": "npm --prefix client run dev",
-    "test-cron": "curl -i http://localhost:3000/api/cron-update -H \"Authorization: Bearer $CRON_SECRET\""
+    "test-cron": "curl -i http://localhost:3000/api/cron-update -H \"Authorization: Bearer $CRON_SECRET\"",
+    "db:migrate": "node scripts/migrate.js"
   }
 }

@@ -1,17 +1,9 @@
 // Vercel Serverless Function - Runs daily at 12AM
 
 import { GoogleGenAI } from "@google/genai";
-import mongoose from "mongoose";
 import { scrapeCards } from "../scripts/scrape.ts";
 import { sendPromotionAlertEmails } from "./_lib/alerts.js";
-import { connectDB } from "./_lib/db.js";
-
-// MongoDB Schema
-const DataSchema = new mongoose.Schema({
-  card: String,
-  date: Number,
-  data: Array,
-});
+import { getLatestPromotion, insertPromotion } from "./_lib/db.js";
 
 const EXTRACTION_PROMPT = `
 Return ONLY a JSON object where each key is the same card key from Input JSON.
@@ -103,7 +95,6 @@ async function geminiParse(promotion, prompt) {
 }
 
 export default async function handler(req, res) {
-  await connectDB();
   const offersMap = await scrapeCards();
   console.log(offersMap);
 
@@ -141,11 +132,13 @@ export default async function handler(req, res) {
   const promotionChanges = [];
 
   for (const [key, value] of parsedMap) {
-    const newData = value;
-    const CardModel = mongoose.models[key] || mongoose.model(key, DataSchema, key);
-    const latest =
-      (await CardModel.findOne().sort({ date: -1 })) || undefined;
-    const latestData = latest?.data?.[0];
+    // Postgres stores the fee with 2 decimals; round first so the
+    // "unchanged since last run" comparison below stays exact.
+    const newData = {
+      ...value,
+      totalMembershipFee: Math.round(Number(value.totalMembershipFee) * 100) / 100,
+    };
+    const latestData = await getLatestPromotion(key);
     const isSame =
       latestData &&
       newData &&
@@ -155,12 +148,7 @@ export default async function handler(req, res) {
       latestData.totalMembershipFee === newData.totalMembershipFee;
 
     if (!isSame) {
-      const doc = CardModel({
-        card: key,
-        date: Date.now(),
-        data: [newData],
-      });
-      await doc.save();
+      await insertPromotion(key, newData);
       promotionChanges.push({
         card: key,
         ...newData,

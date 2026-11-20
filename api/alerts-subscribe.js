@@ -1,4 +1,4 @@
-import { connectDB, getAlertSubscriberModel } from "./_lib/db.js";
+import { upsertAlertSubscriber } from "./_lib/db.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -25,8 +25,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    await connectDB();
-
     const body = getRequestBody(req);
     const email = String(body.email || "")
       .trim()
@@ -36,27 +34,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Please enter a valid email address." });
     }
 
-    const AlertSubscriber = getAlertSubscriberModel();
-    const now = new Date();
-
-    await AlertSubscriber.findOneAndUpdate(
-      { email },
-      {
-        $set: {
-          email,
-          isActive: true,
-          updatedAt: now,
-        },
-        $setOnInsert: {
-          createdAt: now,
-        },
-      },
-      {
-        upsert: true,
-        new: true,
-        setDefaultsOnInsert: true,
-      },
-    );
+    await upsertAlertSubscriber(email);
 
     return res.status(200).json({
       ok: true,
